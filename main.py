@@ -4,7 +4,7 @@ import sys
 
 if __name__ == "__main__":
     source_ip = socket.gethostbyname(socket.gethostname())
-    print(source_ip)
+    source_ip = "10.10.10.2"
     source_port = int(sys.argv[1])
     dest_ip = sys.argv[2]
     dest_port = int(sys.argv[3])
