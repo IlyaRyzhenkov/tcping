@@ -63,7 +63,7 @@ class HeaderCreator:
                self.IP_checksum
         TCP_header = self.source_port + self.dest_port + self.seq + self.ack + self.TCP_header_len_flags + self.window_size +\
                      self.TCP_checksum + self.urgent_pointer + self.options
-        return TCP_header
+        return IP_header + TCP_header
 
 
 
