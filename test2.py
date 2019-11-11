@@ -1,11 +1,6 @@
 import socket
 
-HOST = socket.gethostbyname(socket.gethostname())
-
-# create a raw socket and bind it to the public interface
-s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_IP)
-s.bind((HOST, 0))
-
+s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
 s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
 
 ip_header  = b'\x45\x00\x00\x28'  # Version, IHL, Type of Service | Total Length
@@ -21,4 +16,4 @@ tcp_header += b'\x50\x02\x71\x10' # Data Offset, Reserved, Flags | Window Size
 tcp_header += b'\xe6\x32\x00\x00' # Checksum | Urgent Pointer
 
 packet = ip_header + tcp_header
-s.sendto(packet, ('213.180.194.173', 12323))
+s.sendto(packet, ('10.10.10.1', 0))
