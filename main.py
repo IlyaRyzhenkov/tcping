@@ -4,9 +4,10 @@ import sys
 
 if __name__ == "__main__":
     source_ip = socket.gethostbyname(socket.gethostname())
-    source_port = sys.argv[2]
-    dest_ip = sys.argv[3]
-    dest_port = int(sys.argv[4])
+    print(source_ip)
+    source_port = int(sys.argv[1])
+    dest_ip = sys.argv[2]
+    dest_port = int(sys.argv[3])
     creator = Creator.HeaderCreator(source_ip, dest_ip, source_port, dest_port, 0)
     packet = creator.make_SYN_quarry()
 

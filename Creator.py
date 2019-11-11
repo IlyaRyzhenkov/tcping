@@ -53,6 +53,7 @@ class HeaderCreator:
     @staticmethod
     def parse_IP(ip):
         numbers = map(int, ip.split('.'))
+        print(numbers)
         byte = b''
         for number in numbers:
             byte += number.to_bytes(1, byteorder='big')
@@ -66,7 +67,7 @@ class HeaderCreator:
         return IP_header + TCP_header
 
 
-
+"""
 source_ip = '192.168.0.100'
 dest_ip = '192.170.0.99'
 source_port = 50001
@@ -81,3 +82,4 @@ HOST = socket.gethostbyname(socket.gethostname())
 print(HOST)
 #s.bind((HOST, source_port))
 s.sendto(data, (dest_ip, dest_port))
+"""
