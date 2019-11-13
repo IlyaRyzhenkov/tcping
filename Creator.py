@@ -1,7 +1,7 @@
 import random
 import socket
 import itertools
-
+import test2
 
 class HeaderCreator:
     def __init__(self, source_ip, dest_ip, source_port, dest_port, seq_num):
@@ -69,7 +69,7 @@ class HeaderCreator:
         return IP_header + TCP_header
 
 
-"""
+
 source_ip = '10.10.10.2'
 dest_ip = '10.10.10.1'
 source_port = 12345
@@ -77,11 +77,10 @@ dest_port = 80
 
 creator = HeaderCreator('10.10.10.2', '10.10.10.1', source_port, dest_port, 0)
 data = creator.make_SYN_quarry()
+print(data)
 
 tcp = socket.getprotobyname('tcp')
 s = socket.socket(socket.AF_INET, socket.SOCK_RAW, tcp)
-HOST = socket.gethostbyname(socket.gethostname())
-print(HOST)
-#s.bind((HOST, source_port))
+s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
 s.sendto(data, (dest_ip, dest_port))
-"""
+
