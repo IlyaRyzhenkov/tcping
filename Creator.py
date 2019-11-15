@@ -68,19 +68,9 @@ class HeaderCreator:
                      self.TCP_checksum + self.urgent_pointer + self.options
         return IP_header + TCP_header
 
-
-
-source_ip = '10.10.10.2'
-dest_ip = '10.10.10.1'
-source_port = 12345
-dest_port = 80
-
-creator = HeaderCreator('10.10.10.2', '10.10.10.1', source_port, dest_port, 0)
-data = creator.make_SYN_quarry()
-print(data)
-
+"""
 tcp = socket.getprotobyname('tcp')
-s = socket.socket(socket.AF_INET, socket.SOCK_RAW, tcp)
+s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_IP)
 s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
 s.sendto(data, (dest_ip, dest_port))
-
+"""
