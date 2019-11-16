@@ -39,8 +39,8 @@ def receive_data(sock, ip):
     data = s.recvfrom(2048)
     print("Data received:")
     parser = Parcer.Parser(data[0])
+    print(parser, ip)
     if parser.filter_by_source_ip(ip):
-        print(parser)
         return True
     return False
 
