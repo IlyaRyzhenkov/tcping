@@ -2,9 +2,9 @@ class Parser:
     def parse_data(self, data):
         self.segment_len = int.from_bytes(data[2:4], byteorder="big")
         self.source_ip = "{}.{}.{}.{}".format(data[12], data[13],
-            data[14], data[15])
+                                              data[14], data[15])
         self.dest_ip = "{}.{}.{}.{}".format(data[16], data[17],
-            data[18], data[19])
+                                            data[18], data[19])
         self.source_port = int.from_bytes(data[20:22], byteorder="big")
         self.dest_port = int.from_bytes(data[22:24], byteorder="big")
         self.seqence = int.from_bytes(data[24:28], byteorder="big")
@@ -20,8 +20,10 @@ class Parser:
     def __str__(self):
         message = \
             "Source ip:{s_ip}\nDest ip:{d_ip}\nSource port:{s_port}\n" \
-            "Dest port:{d_port}\nSequence:{seq}\nAcknowledge:{ack}\nFlags:{flags}\n".format(
-                s_ip=self.source_ip, d_ip=self.dest_ip, s_port=self.source_port,
+            "Dest port:{d_port}\nSequence:{seq}" \
+            "\nAcknowledge:{ack}\nFlags:{flags}\n".format(
+                s_ip=self.source_ip, d_ip=self.dest_ip,
+                s_port=self.source_port,
                 d_port=self.dest_port, seq=self.seqence, ack=self.ack,
                 flags=self.flags
             )

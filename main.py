@@ -23,7 +23,8 @@ def check_is_correct_ip(ip):
 
 def parse_args():
     arg_parser = argparse.ArgumentParser(description="TCPing console app")
-    arg_parser.add_argument('dest_ip', metavar='dest_ip', help='Destination ip address')
+    arg_parser.add_argument(
+        'dest_ip', metavar='dest_ip', help='Destination ip address')
     arg_parser.add_argument('dest_port', metavar='dest_port',
                             type=int, help='Destination port address')
     res = arg_parser.parse_args()
@@ -45,7 +46,8 @@ if __name__ == "__main__":
     source_ip = socket.gethostbyname(socket.gethostname())
     source_port = 12345
     dest_ip, dest_port = parse_args()
-    creator = Creator.HeaderCreator(source_ip, dest_ip, source_port, dest_port, 0)
+    creator = Creator.HeaderCreator(
+        source_ip, dest_ip, source_port, dest_port, 0)
     packet = creator.make_SYN_quarry()
 
     tcp = socket.getprotobyname("tcp")

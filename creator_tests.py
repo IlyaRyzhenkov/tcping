@@ -12,7 +12,8 @@ class TestCreator(unittest.TestCase):
 
     def test_get_ip_checksum(self):
         expected = b'\xa6\xec'
-        creator = Creator.HeaderCreator('10.10.10.2', '10.10.10.1', 12345, 80, 0)
+        creator = Creator.HeaderCreator(
+            '10.10.10.2', '10.10.10.1', 12345, 80, 0)
         actual = creator.get_IP_checksum()
         self.assertEqual(
             expected, actual,
@@ -20,7 +21,8 @@ class TestCreator(unittest.TestCase):
 
     def test_get_tcp_checksum(self):
         expected = b'\xe6\x32'
-        creator = Creator.HeaderCreator('10.10.10.2', '10.10.10.1', 12345, 80, 0)
+        creator = Creator.HeaderCreator(
+            '10.10.10.2', '10.10.10.1', 12345, 80, 0)
         actual = creator.get_TCP_checksum()
         self.assertEqual(
             expected, actual,
@@ -32,7 +34,8 @@ class TestCreator(unittest.TestCase):
         expected += b'\x00\x50\x00\x00\x00\x00\x00\x00\x00\x00\x50'
         expected += b'\x02\x71\x10\xe6\x32\x00\x00'
 
-        creator = Creator.HeaderCreator('10.10.10.2', '10.10.10.1', 12345, 80, 0)
+        creator = Creator.HeaderCreator(
+            '10.10.10.2', '10.10.10.1', 12345, 80, 0)
         packet = creator.make_SYN_quarry()
 
         self.assertEqual(
