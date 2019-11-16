@@ -1,4 +1,7 @@
 class Parser:
+    def __init__(self, data):
+        self.parse_data(data)
+
     def parse_data(self, data):
         self.segment_len = int.from_bytes(data[2:4], byteorder="big")
         self.source_ip = "{}.{}.{}.{}".format(data[12], data[13],
@@ -12,9 +15,11 @@ class Parser:
         self.flags = bin(int.from_bytes(data[32:34], byteorder="big"))
         try:
             self.is_ack = self.flags[-5] == '1'
+            self.is_syn = self.flags[-2] == '1'
             self.is_fin = self.flags[-1] == '1'
         except IndexError:
             self.is_ack = False
+            self.is_syn = False
             self.is_fin = self.flags == '0b1'
 
     def __str__(self):
@@ -32,3 +37,6 @@ class Parser:
         if self.is_fin:
             message += "This is Fin packet\n"
         return message
+
+    def filter_by_source_ip(self, source_ip):
+        return self.source_ip == source_ip

@@ -1,62 +1,67 @@
 import socket
+import sys
 import Creator
 import Parcer
 import argparse
 
 
-def check_is_correct_ip(ip):
-    try:
-        count = 0
-        for num in map(int, ip.split('.')):
-            count += 1
-            if 0 <= num <= 255:
-                continue
-            else:
-                return False
-        if count != 4:
-            return False
-        else:
-            return True
-    except ValueError:
-        return False
-
-
 def parse_args():
-    arg_parser = argparse.ArgumentParser(description="TCPing console app")
-    arg_parser.add_argument(
-        'dest_ip', metavar='dest_ip', help='Destination ip address')
+    arg_parser = argparse.ArgumentParser(description='TCPing console app')
+    arg_parser.add_argument('dest_ip', metavar='dest_ip',
+                            help='Destination ip address')
     arg_parser.add_argument('dest_port', metavar='dest_port',
                             type=int, help='Destination port address')
+    arg_parser.add_argument('-t', '--timeout', type=float, default=3,
+                            help='Timeout for waiting packets')
+    arg_parser.add_argument('-p', '--packet', type=int, default=3,
+                            help='Count of packets')
+    arg_parser.add_argument('-i', '--interval', type=float, default=1,
+                            help='Packet sending interval')
     res = arg_parser.parse_args()
-    if not check_is_correct_ip(res.dest_ip):
-        print('Incorrect ip address: {}'.format(res.dest_ip))
+    if res.timeout <= 0:
+        print('Timeout should be positive')
         exit(1)
-    return res.dest_ip, res.dest_port
+    if res.packet <= 0:
+        print('Packet count should be positive')
+        exit(2)
+    if res.interval < 0:
+        print('Interval should not be negative')
+        exit(3)
+    try:
+        ip = socket.gethostbyname(res.dest_ip)
+    except socket.gaierror:
+        print('Incorrect destination address')
+        exit(4)
+    return ip, res.dest_port, res.timeout, res.packet, res.interval
 
 
-def receive_data(sock):
-    data = s.recvfrom(1024)
+def receive_data(sock, ip):
+    data = s.recvfrom(2048)
     print("Data received:")
-    parser = Parcer.Parser()
-    parser.parse_data(data[0])
-    print(parser)
+    parser = Parcer.Parser(data[0])
+    if parser.filter_by_source_ip(ip):
+        print(parser)
+        return True
+    return False
 
 
 if __name__ == "__main__":
-    source_ip = socket.gethostbyname(socket.gethostname())
-    source_port = 12345
-    dest_ip, dest_port = parse_args()
+    source_ip = '0.0.0.0'
+    source_port = 0
+    dest_ip, dest_port, timeout, packet_count, interval = parse_args()
     creator = Creator.HeaderCreator(
         source_ip, dest_ip, source_port, dest_port, 0)
     packet = creator.make_SYN_quarry()
-
-    tcp = socket.getprotobyname("tcp")
-    s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_IP)
+    if sys.platform == 'win32':
+        tcp = socket.IPPROTO_IP
+    else:
+        tcp = socket.getprotobyname("tcp")
+    s = socket.socket(socket.AF_INET, socket.SOCK_RAW, tcp)
     s.bind((source_ip, source_port))
-
-    s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+    #s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
     s.sendto(packet, (dest_ip, dest_port))
     print("Sending to ({}, {})".format(dest_ip, dest_port))
 
-    receive_data(s)
-    s.close()
+    while True:
+        if receive_data(s, dest_ip):
+            break
