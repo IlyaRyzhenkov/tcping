@@ -1,9 +1,6 @@
 import socket
-import sys
-import Creator
-import Parcer
 import argparse
-
+import Program
 
 def parse_args():
     arg_parser = argparse.ArgumentParser(description='TCPing console app')
@@ -32,36 +29,16 @@ def parse_args():
     except socket.gaierror:
         print('Incorrect destination address')
         exit(4)
-    return ip, res.dest_port, res.timeout, res.packet, res.interval
-
-
-def receive_data(sock, ip):
-    data = s.recvfrom(2048)
-    print("Data received:")
-    parser = Parcer.Parser(data[0])
-    print(parser, ip)
-    if parser.filter_by_source_ip(ip):
-        return True
-    return False
+    return ip, res.dest_port, res.packet, res.timeout, res.interval
 
 
 if __name__ == "__main__":
     source_ip = '0.0.0.0'
     source_port = 0
-    dest_ip, dest_port, timeout, packet_count, interval = parse_args()
-    creator = Creator.HeaderCreator(
-        source_ip, dest_ip, source_port, dest_port, 0)
-    packet = creator.make_SYN_quarry()
-    if sys.platform == 'win32':
-        tcp = socket.IPPROTO_IP
-    else:
-        tcp = socket.getprotobyname("tcp")
-    s = socket.socket(socket.AF_INET, socket.SOCK_RAW, tcp)
-    s.bind((source_ip, source_port))
-    #s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
-    s.sendto(packet, (dest_ip, dest_port))
-    print("Sending to ({}, {})".format(dest_ip, dest_port))
-
-    while True:
-        if receive_data(s, dest_ip):
-            break
+    dest_ip, dest_port, packet_count, timeout, interval = parse_args()
+    program = Program.Programm(
+        (source_ip, source_port),
+        (dest_ip, dest_port),
+        (packet_count, timeout, interval))
+    program.send_and_receive_packets()
+    program.process_data()

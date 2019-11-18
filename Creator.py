@@ -25,6 +25,11 @@ class HeaderCreator:
         # self.options = b'\x02\x04\x05\xb4\x01\x03\x03\x08\x01\x01\x04\x02'
         self.options = b''
 
+        self.send_time = 0
+        self.answer_time = 0
+        self.is_answered = False
+        self.time = -1
+
     @staticmethod
     def get_pairs(it):
         prev = None
