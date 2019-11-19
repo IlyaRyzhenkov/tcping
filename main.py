@@ -2,6 +2,7 @@ import socket
 import argparse
 import Program
 
+
 def parse_args():
     arg_parser = argparse.ArgumentParser(description='TCPing console app')
     arg_parser.add_argument('dest_ip', metavar='dest_ip',
@@ -36,7 +37,7 @@ if __name__ == "__main__":
     source_ip = '0.0.0.0'
     source_port = 0
     dest_ip, dest_port, packet_count, timeout, interval = parse_args()
-    program = Program.Programm(
+    program = Program.Program(
         (source_ip, source_port),
         (dest_ip, dest_port),
         (packet_count, timeout, interval))

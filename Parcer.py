@@ -4,10 +4,13 @@ class Parser:
 
     def parse_data(self, data):
         self.segment_len = int.from_bytes(data[2:4], byteorder="big")
+        self.proto = data[9]
         self.source_ip = "{}.{}.{}.{}".format(data[12], data[13],
                                               data[14], data[15])
         self.dest_ip = "{}.{}.{}.{}".format(data[16], data[17],
                                             data[18], data[19])
+        if self.proto != 6:
+            return
         self.source_port = int.from_bytes(data[20:22], byteorder="big")
         self.dest_port = int.from_bytes(data[22:24], byteorder="big")
         self.seqence = int.from_bytes(data[24:28], byteorder="big")
