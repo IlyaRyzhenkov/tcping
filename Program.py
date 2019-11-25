@@ -100,7 +100,8 @@ class Program:
         print('Packets sent: {}'.format(self.count_of_packets_sent))
         print('Packets received: {}'.format(self.count_of_received_packets))
         print('Packets loss: {}'.format(self.packets_loss))
-        print(self.stats)
+        if self.answered_packets > 0:
+            print(self.stats)
 
     def process_data(self):
         self.filter_loss_packets()
