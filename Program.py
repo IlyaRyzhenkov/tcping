@@ -4,10 +4,11 @@ import select
 import Creator
 import sys
 import Parcer
+import Statistics
 
 
 class Program:
-    def __init__(self, source_addr, dest_addr, params):
+    def __init__(self, source_addr, dest_addr, params, stats):
         self.source_ip, self.source_port = source_addr
         self.dest_ip, self.dest_port = dest_addr
         self.count, self.timeout, self.interval = params
@@ -18,26 +19,23 @@ class Program:
         self.count_of_received_packets = 0
         self.packets_loss = 0
 
-        self.max_time = 0
-        self.min_time = 0
-        self.avg_time = 0
+        self.stats = Statistics.StatManager()
+        for stat in stats:
+            self.stats.add_statistics(stat)
 
     def create_socket(self):
-        if sys.platform == 'win32':
-            tcp = socket.IPPROTO_IP
-        else:
-            tcp = socket.getprotobyname("tcp")
+        tcp = socket.getprotobyname("tcp")
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, tcp)
         self.sock.bind((self.source_ip, self.source_port))
-        self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
-        
+        if sys.platform != 'win32':
+            self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
 
     def send_packet(self, seq):
         packet = Creator.HeaderCreator(
             self.source_ip, self.dest_ip,
             self.source_port, self.dest_port, seq)
         self.packets[seq] = packet
-        self.sock.sendto(packet.make_SYN_quarry(),
+        self.sock.sendto(packet.make_SYN_query(),
                          (self.dest_ip, self.dest_port))
         t = time.perf_counter()
         packet.send_time = t
@@ -58,11 +56,11 @@ class Program:
                                          self.packets[seq].send_time
                 if self.packets[seq].time < self.timeout:
                     self.count_of_received_packets += 1
-                    sys.stdout.print('*')
+                    sys.stdout.write('*')
                     sys.stdout.flush()
                 else:
                     self.packets_loss += 1
-                    sys.stdout.print('_')
+                    sys.stdout.write('_')
                     sys.stdout.flush()
 
     def send_and_receive_packets(self):
@@ -95,32 +93,16 @@ class Program:
                 self.answered_packets.append(packet)
 
     def get_statistics(self):
-        min_time = float('+inf')
-        max_time = 0
-        total_time = 0
-        for packet in self.answered_packets:
-            if packet.time < min_time:
-                min_time = packet.time
-            if packet.time > max_time:
-                max_time = packet.time
-            total_time += packet.time
-
-        self.min_time = min_time
-        self.max_time = max_time
-        self.avg_time = total_time / len(self.answered_packets)
+        self.stats.calculate(self.answered_packets)
 
     def print_statistics(self):
         print()
         print('Packets sent: {}'.format(self.count_of_packets_sent))
         print('Packets received: {}'.format(self.count_of_received_packets))
         print('Packets loss: {}'.format(self.packets_loss))
-        if self.count_of_received_packets > 0:
-            print('Min time: {}'.format(self.min_time))
-            print('Max time: {}'.format(self.max_time))
-            print('Average time: {}'.format(self.avg_time))
+        print(self.stats)
 
     def process_data(self):
         self.filter_loss_packets()
         if self.count_of_received_packets > 0:
             self.get_statistics()
-        self.print_statistics()

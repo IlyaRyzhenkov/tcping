@@ -1,11 +1,12 @@
 import itertools
+import struct
 
 
 class HeaderCreator:
     def __init__(self, source_ip, dest_ip, source_port, dest_port, seq_num):
 
         self.ip_version_length = b'\x45\x00\x00\x28'
-        # version 4, IHL 5, type of service, Total length 52
+        # version 4, IHL 5, type of service, Total length 40
         self.ip_fragmentation = b'\xab\xcd\x00\x00'
         self.ttl_tcp_protocol = b'\x40\x06'
         self.source_ip = self.parse_IP(source_ip)
@@ -65,17 +66,14 @@ class HeaderCreator:
     @staticmethod
     def parse_IP(ip):
         numbers = map(int, ip.split('.'))
-        byte = b''
-        for number in numbers:
-            byte += number.to_bytes(1, byteorder='big')
-        return byte
+        return struct.pack('BBBB', *numbers)
 
-    def make_SYN_quarry(self):
-        IP_header = self.ip_version_length + self.ip_fragmentation +\
-                    self.ttl_tcp_protocol + self.IP_checksum +\
-                    self.source_ip + self.dest_ip
-        TCP_header = self.source_port + self.dest_port + self.seq +\
-            self.ack + self.TCP_header_len_flags +\
-            self.window_size + self.TCP_checksum +\
-            self.urgent_pointer + self.options
+    def make_SYN_query(self):
+        IP_header = b''.join(
+            [self.ip_version_length, self.ip_fragmentation, self.ttl_tcp_protocol,
+             self.IP_checksum, self.source_ip, self.dest_ip])
+        TCP_header = b''.join([
+            self.source_port, self.dest_port, self.seq, self.ack, self.TCP_header_len_flags,
+            self.window_size, self.TCP_checksum, self.urgent_pointer
+        ])
         return IP_header + TCP_header

@@ -36,7 +36,7 @@ class TestCreator(unittest.TestCase):
 
         creator = Creator.HeaderCreator(
             '10.10.10.2', '10.10.10.1', 12345, 80, 0)
-        packet = creator.make_SYN_quarry()
+        packet = creator.make_SYN_query()
 
         self.assertEqual(
             expected, packet,

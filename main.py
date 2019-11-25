@@ -1,6 +1,7 @@
 import socket
 import argparse
 import Program
+import sys
 
 
 def parse_args():
@@ -8,29 +9,46 @@ def parse_args():
     arg_parser.add_argument('dest_ip', metavar='dest_ip',
                             help='Destination ip address')
     arg_parser.add_argument('dest_port', metavar='dest_port',
-                            type=int, help='Destination port address')
-    arg_parser.add_argument('-t', '--timeout', type=float, default=3,
+                            type=check_non_negative_int, help='Destination port address')
+    arg_parser.add_argument('-t', '--timeout', type=check_non_negative_float, default=3,
                             help='Timeout for waiting packets')
-    arg_parser.add_argument('-p', '--packet', type=int, default=3,
+    arg_parser.add_argument('-p', '--packet', type=check_non_negative_int, default=3,
                             help='Count of packets')
-    arg_parser.add_argument('-i', '--interval', type=float, default=1,
+    arg_parser.add_argument('-i', '--interval', type=check_non_negative_float, default=1,
                             help='Packet sending interval')
     res = arg_parser.parse_args()
+    if sys.platform == 'win32':
+        print('Windows don\'t supported')
+        sys.exit(0)
     if res.timeout <= 0:
-        print('Timeout should be positive')
-        exit(1)
+        sys.stderr.write('Timeout should be positive')
+        sys.exit(1)
     if res.packet <= 0:
-        print('Packet count should be positive')
-        exit(2)
+        sys.stderr.write('Packet count should be positive')
+        sys.exit(2)
     if res.interval < 0:
-        print('Interval should not be negative')
-        exit(3)
+        sys.stderr.write('Interval should not be negative')
+        sys.exit(3)
     try:
         ip = socket.gethostbyname(res.dest_ip)
     except socket.gaierror:
-        print('Incorrect destination address')
-        exit(4)
+        sys.stderr.write('Incorrect destination address')
+        sys.exit(4)
     return ip, res.dest_port, res.packet, res.timeout, res.interval
+
+
+def check_non_negative_int(value):
+    ivalue = int(value)
+    if ivalue < 0:
+        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
+    return ivalue
+
+
+def check_non_negative_float(value):
+    fvalue = int(value)
+    if fvalue < 0:
+        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
+    return fvalue
 
 
 if __name__ == "__main__":
@@ -43,3 +61,4 @@ if __name__ == "__main__":
         (packet_count, timeout, interval))
     program.send_and_receive_packets()
     program.process_data()
+    program.print_statistics()
