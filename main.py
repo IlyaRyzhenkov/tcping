@@ -2,6 +2,7 @@ import socket
 import argparse
 import Program
 import sys
+import Statistics
 
 
 def parse_args():
@@ -55,10 +56,14 @@ if __name__ == "__main__":
     source_ip = '0.0.0.0'
     source_port = 0
     dest_ip, dest_port, packet_count, timeout, interval = parse_args()
+    min_stat = Statistics.MinTimeStat()
+    max_stat = Statistics.MaxTimeStat()
+    avg_stat = Statistics.AverageTimeStat()
     program = Program.Program(
         (source_ip, source_port),
         (dest_ip, dest_port),
-        (packet_count, timeout, interval))
+        (packet_count, timeout, interval),
+        (min_stat, max_stat, avg_stat))
     program.send_and_receive_packets()
     program.process_data()
     program.print_statistics()
