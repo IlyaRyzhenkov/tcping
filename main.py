@@ -3,11 +3,12 @@ import argparse
 import Program
 import sys
 import Statistics
+import signal
 
 
 def parse_args():
     arg_parser = argparse.ArgumentParser(description='TCPing console app')
-    arg_parser.add_argument('dest_ip', metavar='dest_ip',
+    arg_parser.add_argument('dest_ip', metavar='dest_ip', type=check_ip,
                             help='Destination ip address')
     arg_parser.add_argument('dest_port', metavar='dest_port',
                             type=check_non_negative_int, help='Destination port address')
@@ -17,25 +18,19 @@ def parse_args():
                             help='Count of packets')
     arg_parser.add_argument('-i', '--interval', type=check_non_negative_float, default=1,
                             help='Packet sending interval')
+    arg_parser.add_argument('-u', '--unlimited', action='store_true',
+                            help='Property for unlimited count of pings. You can get statistics by SIGUSR1')
+    arg_parser.add_argument('-a', '--add', nargs=2, action='append', help='Add another address for ping')
     res = arg_parser.parse_args()
+    address = parse_additional_address(res.add)
     if sys.platform == 'win32':
         print('Windows don\'t supported')
         sys.exit(0)
-    if res.timeout <= 0:
-        sys.stderr.write('Timeout should be positive')
-        sys.exit(1)
-    if res.packet <= 0:
-        sys.stderr.write('Packet count should be positive')
-        sys.exit(2)
-    if res.interval < 0:
-        sys.stderr.write('Interval should not be negative')
-        sys.exit(3)
-    try:
-        ip = socket.gethostbyname(res.dest_ip)
-    except socket.gaierror:
-        sys.stderr.write('Incorrect destination address')
-        sys.exit(4)
-    return ip, res.dest_port, res.packet, res.timeout, res.interval
+    return res.dest_ip, res.dest_port, res.packet, res.timeout, res.interval, res.unlimeted
+
+
+def check_ip(ip):
+    return socket.gethostbyname(ip)
 
 
 def check_non_negative_int(value):
@@ -46,16 +41,39 @@ def check_non_negative_int(value):
 
 
 def check_non_negative_float(value):
-    fvalue = int(value)
+    fvalue = float(value)
     if fvalue < 0:
         raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
     return fvalue
 
 
+def parse_additional_address(address_list):
+    parsed = []
+    if not address_list:
+        return parsed
+    for address in address_list:
+        try:
+            ip, port = parse_address(address)
+            parsed.append((ip, port))
+        except Exception:
+            print('Wrong additional address {}'.format(' '.join(address)))
+    return parsed
+
+
+def parse_address(address):
+    ip, port = address
+    ip = socket.gethostbyname(ip)
+    port = int(port)
+    if 65536 < port or port < 0:
+        raise ValueError
+    return ip, port
+
+
+
 if __name__ == "__main__":
     source_ip = '0.0.0.0'
     source_port = 0
-    dest_ip, dest_port, packet_count, timeout, interval = parse_args()
+    dest_ip, dest_port, packet_count, timeout, interval, is_unlimited_mode = parse_args()
     min_stat = Statistics.MinTimeStat()
     max_stat = Statistics.MaxTimeStat()
     avg_stat = Statistics.AverageTimeStat()
@@ -63,7 +81,10 @@ if __name__ == "__main__":
         (source_ip, source_port),
         (dest_ip, dest_port),
         (packet_count, timeout, interval),
-        (min_stat, max_stat, avg_stat))
+        (min_stat, max_stat, avg_stat),
+        is_unlimited_mode)
+    if is_unlimited_mode:
+        signal.signal(signal.SIGUSR1, program.process_data)
     program.send_and_receive_packets()
-    program.process_data()
-    program.print_statistics()
+    if not is_unlimited_mode:
+        program.process_data()
