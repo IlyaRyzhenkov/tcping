@@ -26,7 +26,7 @@ def parse_args():
     if sys.platform == 'win32':
         print('Windows don\'t supported')
         sys.exit(0)
-    return res.dest_ip, res.dest_port, res.packet, res.timeout, res.interval, res.unlimeted
+    return res.dest_ip, res.dest_port, res.packet, res.timeout, res.interval, res.unlimited
 
 
 def check_ip(ip):
@@ -67,7 +67,6 @@ def parse_address(address):
     if 65536 < port or port < 0:
         raise ValueError
     return ip, port
-
 
 
 if __name__ == "__main__":
