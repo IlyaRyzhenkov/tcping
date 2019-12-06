@@ -27,8 +27,8 @@ class Program:
         tcp = socket.getprotobyname("tcp")
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, tcp)
         self.sock.bind((self.source_ip, self.source_port))
-        if sys.platform != 'win32':
-            self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+        self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+        
 
     def send_packet(self, seq):
         packet = Creator.HeaderCreator(
@@ -45,6 +45,7 @@ class Program:
 
     def parse_packet(self, data, recv_time):
         parser = Parcer.Parser(data[0])
+        print(1, end=' ')
         if parser.proto != 6:
             return
         if parser.filter_by_source_ip(self.dest_ip):
@@ -100,7 +101,7 @@ class Program:
         print('Packets sent: {}'.format(self.count_of_packets_sent))
         print('Packets received: {}'.format(self.count_of_received_packets))
         print('Packets loss: {}'.format(self.packets_loss))
-        if self.answered_packets > 0:
+        if self.answered_packets:
             print(self.stats)
 
     def process_data(self):

@@ -46,7 +46,7 @@ def check_non_negative_int(value):
 
 
 def check_non_negative_float(value):
-    fvalue = int(value)
+    fvalue = float(value)
     if fvalue < 0:
         raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
     return fvalue
