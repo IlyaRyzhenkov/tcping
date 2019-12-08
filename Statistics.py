@@ -5,10 +5,11 @@ class StatManager:
     def add_statistics(self, stat):
         self.stats.append(stat)
 
-    def calculate(self, packets):
-        for packet in packets:
-            for stat in self.stats:
-                stat.update(packet)
+    def update(self, packet):
+        for stat in self.stats:
+            stat.update(packet)
+
+    def calculate(self):
         for stat in self.stats:
             stat.calculate()
 
