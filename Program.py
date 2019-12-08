@@ -10,6 +10,7 @@ import Statistics
 class Program:
     def __init__(self, source_addr, dest_addr, params, stats):
         self.source_ip, self.source_port = source_addr
+        self.source_ip = "192.168.0.104"
         self.dest_ip, self.dest_port = dest_addr
         self.count, self.timeout, self.interval = params
 
@@ -45,7 +46,6 @@ class Program:
 
     def parse_packet(self, data, recv_time):
         parser = Parcer.Parser(data[0])
-        print(1, end=' ')
         if parser.proto != 6:
             return
         if parser.filter_by_source_ip(self.dest_ip):
