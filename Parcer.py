@@ -37,5 +37,9 @@ class Parser:
             message += "This is Fin packet\n"
         return message
 
-    def filter_by_source_ip(self, source_ip):
-        return self.source_ip == source_ip
+    def filter_by_addr_list(self, addr_list):
+        for addr in addr_list:
+            if self.source_ip == addr[0]:
+                return True
+        return False
+

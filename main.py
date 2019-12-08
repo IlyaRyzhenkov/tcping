@@ -23,10 +23,11 @@ def parse_args():
     arg_parser.add_argument('-a', '--add', nargs=2, action='append', help='Add another address for ping')
     res = arg_parser.parse_args()
     address = parse_additional_address(res.add)
+    address.append((res.dest_ip, res.dest_port))
     if sys.platform == 'win32':
         print('Windows don\'t supported')
         sys.exit(0)
-    return res.dest_ip, res.dest_port, res.packet, res.timeout, res.interval, res.unlimited
+    return address, res.packet, res.timeout, res.interval, res.unlimited
 
 
 def check_ip(ip):
@@ -72,18 +73,18 @@ def parse_address(address):
 if __name__ == "__main__":
     source_ip = '0.0.0.0'
     source_port = 0
-    dest_ip, dest_port, packet_count, timeout, interval, is_unlimited_mode = parse_args()
+    address, packet_count, timeout, interval, is_unlimited_mode = parse_args()
     min_stat = Statistics.MinTimeStat()
     max_stat = Statistics.MaxTimeStat()
     avg_stat = Statistics.AverageTimeStat()
     program = Program.Program(
         (source_ip, source_port),
-        (dest_ip, dest_port),
+        address,
         (packet_count, timeout, interval),
         (min_stat, max_stat, avg_stat),
         is_unlimited_mode)
     if is_unlimited_mode:
-        signal.signal(signal.SIGUSR1, program.process_data)
+        signal.signal(signal.SIGUSR1, program.signal_handler)
     program.send_and_receive_packets()
     if not is_unlimited_mode:
         program.process_data()
