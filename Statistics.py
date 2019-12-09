@@ -13,6 +13,12 @@ class StatManager:
         for stat in self.stats:
             stat.calculate()
 
+    def get_values(self):
+        values = []
+        for stat in self.stats:
+            values.append(stat.get_value())
+        return values
+
     def __str__(self):
         return '\n'.join(str(stat) for stat in self.stats)
 
@@ -24,6 +30,9 @@ class Stat:
     def calculate(self):
         pass
 
+    def get_value(self):
+        pass
+
 
 class MaxTimeStat(Stat):
     def __init__(self):
@@ -32,6 +41,9 @@ class MaxTimeStat(Stat):
     def update(self, packet):
         if packet.time > self.max:
             self.max = packet.time
+
+    def get_value(self):
+        return self.max
 
     def __str__(self):
         return 'Max time: {}'.format(self.max)
@@ -44,6 +56,9 @@ class MinTimeStat(Stat):
     def update(self, packet):
         if packet.time < self.min:
             self.min = packet.time
+
+    def get_value(self):
+        return self.min
 
     def __str__(self):
         return 'Min time: {}'.format(self.min)
@@ -61,6 +76,9 @@ class AverageTimeStat(Stat):
 
     def calculate(self):
         self.result = self.sum / self.count
+
+    def get_value(self):
+        return self.result
 
     def __str__(self):
         return 'Average time: {}'.format(self.result)
