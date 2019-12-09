@@ -51,7 +51,7 @@ class MaxTimeStat(Stat):
 
 class MinTimeStat(Stat):
     def __init__(self):
-        self.min = float('-inf')
+        self.min = float('+inf')
 
     def update(self, packet):
         if packet.time < self.min:
