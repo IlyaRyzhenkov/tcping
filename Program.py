@@ -3,7 +3,7 @@ import time
 import select
 import Creator
 import sys
-import Parcer
+import Parser
 import Statistics
 
 
@@ -36,7 +36,6 @@ class Program:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, tcp)
         self.sock.bind((self.source_ip, self.source_port))
         self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
-        
 
     def send_packet(self):
         for addr in self.address:
@@ -53,7 +52,7 @@ class Program:
             self.seq += 10
 
     def parse_packet(self, data, recv_time):
-        parser = Parcer.Parser(data[0])
+        parser = Parser.Parser(data[0])
         if parser.proto != 6:
             return
         if parser.filter_by_addr_list(self.address):
@@ -69,7 +68,6 @@ class Program:
                     sys.stdout.write('*')
                     sys.stdout.flush()
                 else:
-                    self.packets_loss += 1
                     sys.stdout.write('_')
                     sys.stdout.flush()
 
@@ -120,4 +118,3 @@ class Program:
 
     def signal_handler(self, a, b):
         self.process_data()
-
