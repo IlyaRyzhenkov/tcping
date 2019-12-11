@@ -2,17 +2,17 @@ import socket
 import time
 import select
 import Creator
-import sys
 import Parser
 import Statistics
 
 
 class Program:
-    def __init__(self, source_addr, address, params, stats, mode):
+    def __init__(self, source_addr, address, params, stats, visualiser, mode):
         self.source_ip, self.source_port = source_addr
         self.source_ip = self.get_ip()
         self.address = address
         self.count, self.timeout, self.interval = params
+        self.visualiser = visualiser
         self.is_unlimited_mode = mode
 
         self.packets = {}
@@ -20,9 +20,9 @@ class Program:
         self.count_of_received_packets = 0
         self.seq = 10
 
-        self.stats = Statistics.StatManager()
-        for stat in stats:
-            self.stats.add_statistics(stat)
+        self.stats = Statistics.AddressStatManager(stats)
+        for addr in self.address:
+            self.stats.add_address(addr)
 
     @staticmethod
     def get_ip():
@@ -47,8 +47,6 @@ class Program:
             t = time.perf_counter()
             packet.send_time = t
             self.count_of_packets_sent += 1
-            sys.stdout.write('.')
-            sys.stdout.flush()
             self.seq += 10
 
     def parse_packet(self, data, recv_time):
@@ -65,11 +63,7 @@ class Program:
                 if self.packets[seq].time < self.timeout:
                     self.count_of_received_packets += 1
                     self.stats.update(self.packets[seq])
-                    sys.stdout.write('*')
-                    sys.stdout.flush()
-                else:
-                    sys.stdout.write('_')
-                    sys.stdout.flush()
+                    self.visualiser.sent_packet_info(self.packets[seq])
 
     def send_and_receive_packets(self):
         self.create_socket()
@@ -82,7 +76,7 @@ class Program:
             self.send_packet()
             self.receive_data(self.interval)
             i += 1
-        if self.timeout > self.interval:
+        if self.timeout > self.interval and self.count_of_received_packets < border:
             self.receive_data(self.timeout - self.interval)
 
     def receive_data(self, timeout):
@@ -98,23 +92,12 @@ class Program:
             else:
                 break
 
-    def get_statistics(self):
-        self.stats.calculate()
-
-    def print_primary_statistics(self):
-        print()
-        print('Packets sent: {}'.format(self.count_of_packets_sent))
-        print('Packets received: {}'.format(self.count_of_received_packets))
-        print('Packets loss: {}'.format(self.count_of_packets_sent - self.count_of_received_packets))
-
-    def print_packet_statistics(self):
-        print(self.stats)
-
     def process_data(self):
-        self.print_primary_statistics()
-        if self.count_of_received_packets > 0:
-            self.get_statistics()
-            self.print_packet_statistics()
+        self.stats.calculate()
+        self.visualiser.sent_stat_info((
+            self.count_of_packets_sent, self.count_of_received_packets,
+            self.count_of_packets_sent - self.count_of_received_packets),
+            self.stats)
 
     def signal_handler(self, a, b):
         self.process_data()

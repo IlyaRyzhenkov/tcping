@@ -18,7 +18,8 @@ class TestParser(unittest.TestCase):
         self.assertEqual(20496, packet.flags, "Wrong flag field value")
         self.assertTrue(packet.is_ack, "Wrong ACK flag value")
         self.assertFalse(packet.is_syn, "Wrong SYN flag value")
-        self.assertFalse(packet.is_fin, 'Wrong FIN flag value')
+        self.assertFalse(packet.is_fin, "Wrong FIN flag value")
+        self.assertFalse(packet.is_rst, "Wrong RST flag value")
         self.assertEqual(str(packet),
                          'Source ip:192.168.0.103\nDest ip:64.233.165.106\n'
                          'Source port:50715\nDest port:443\nSequence:2015740719\n'

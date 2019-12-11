@@ -20,6 +20,7 @@ class Parser:
         self.is_fin = self.flags & 1 == 1
         self.is_syn = self.flags & 2 == 2
         self.is_ack = self.flags & 16 == 16
+        self.is_rst = self.flags & 4 == 4
 
     def __str__(self):
         message = \

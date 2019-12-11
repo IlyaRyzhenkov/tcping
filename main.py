@@ -4,6 +4,7 @@ import Program
 import sys
 import Statistics
 import signal
+import Visualiser
 
 
 def parse_args():
@@ -19,15 +20,15 @@ def parse_args():
     arg_parser.add_argument('-i', '--interval', type=check_non_negative_float, default=1,
                             help='Packet sending interval')
     arg_parser.add_argument('-u', '--unlimited', action='store_true',
-                            help='Property for unlimited count of pings. You can get statistics by SIGUSR1')
-    arg_parser.add_argument('-a', '--add', nargs=2, action='append', help='Add another address for ping')
+                            help='Property for unlimited count of pings. '
+                                 'You can get statistics by SIGUSR1')
+    arg_parser.add_argument('-a', '--add',metavar=('HOST', 'PORT') ,
+                            nargs=2, action='append', help='Add another address for ping')
+    arg_parser.add_argument('-v', action='store_true', help='Shows time for every packet')
     res = arg_parser.parse_args()
     address = parse_additional_address(res.add)
     address.append((res.dest_ip, res.dest_port))
-    if sys.platform == 'win32':
-        print('Windows don\'t supported')
-        sys.exit(0)
-    return address, res.packet, res.timeout, res.interval, res.unlimited
+    return res, address, res.packet, res.timeout, res.interval, res.unlimited
 
 
 def check_ip(ip):
@@ -71,17 +72,23 @@ def parse_address(address):
 
 
 if __name__ == "__main__":
+    if sys.platform == 'win32':
+        print('Windows don\'t supported')
+        sys.exit(1)
+
     source_ip = '0.0.0.0'
     source_port = 0
-    address, packet_count, timeout, interval, is_unlimited_mode = parse_args()
-    min_stat = Statistics.MinTimeStat()
-    max_stat = Statistics.MaxTimeStat()
-    avg_stat = Statistics.AverageTimeStat()
+    parsed, address, packet_count, timeout, interval, is_unlimited_mode = parse_args()
+    if parsed.v:
+        visualiser = Visualiser.TimeVisualiser()
+    else:
+        visualiser = Visualiser.StreamVisualiser(parsed.timeout)
+    stats = (Statistics.MinTimeStat, Statistics.MaxTimeStat, Statistics.AverageTimeStat)
     program = Program.Program(
         (source_ip, source_port),
         address,
         (packet_count, timeout, interval),
-        (min_stat, max_stat, avg_stat),
+        stats, visualiser,
         is_unlimited_mode)
     if is_unlimited_mode:
         signal.signal(signal.SIGUSR1, program.signal_handler)

@@ -1,3 +1,35 @@
+class AddressStatManager:
+    def __init__(self, *stats):
+        self.address_stat = {}
+        self.stats = [i for i in stats]
+
+    def add_address(self, address):
+        self.address_stat[address] = StatManager()
+        for stat in self.stats:
+            self.address_stat[address] = stat()
+
+    def add_stat(self, stat):
+        if not issubclass(stat, Stat):
+            raise ValueError
+        self.stats.append(stat)
+        for address in self.address_stat.values():
+            address.add_statistics(stat())
+
+    def update(self, packet):
+        for address in self.address_stat.values():
+            address.update(packet)
+
+    def calculate(self):
+        for address in self.address_stat.values():
+            address.calculate()
+
+    def get_values(self):
+        return [(address, stat) for address, stat in self.address_stat.items()]
+
+    def __str__(self):
+        return '\n'.join(f'{address}\n{stat}' for address, stat in self.address_stat.items())
+
+
 class StatManager:
     def __init__(self):
         self.stats = []
@@ -46,7 +78,9 @@ class MaxTimeStat(Stat):
         return self.max
 
     def __str__(self):
-        return 'Max time: {}'.format(self.max)
+        if self.max != float('-inf'):
+            return 'Max time: {}'.format(self.max)
+        return 'Max time: Not calculated'
 
 
 class MinTimeStat(Stat):
@@ -61,7 +95,9 @@ class MinTimeStat(Stat):
         return self.min
 
     def __str__(self):
-        return 'Min time: {}'.format(self.min)
+        if self.min != float('+inf'):
+            return 'Min time: {}'.format(self.min)
+        return 'Min time: Not calculated'
 
 
 class AverageTimeStat(Stat):
@@ -81,4 +117,6 @@ class AverageTimeStat(Stat):
         return self.result
 
     def __str__(self):
-        return 'Average time: {}'.format(self.result)
+        if self.result:
+            return 'Average time: {}'.format(self.result)
+        return 'Average time: Not calculated'
