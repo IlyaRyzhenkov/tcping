@@ -1,12 +1,12 @@
 class AddressStatManager:
-    def __init__(self, *stats):
+    def __init__(self, stats):
         self.address_stat = {}
-        self.stats = [i for i in stats]
+        self.stats = stats
 
     def add_address(self, address):
         self.address_stat[address] = StatManager()
         for stat in self.stats:
-            self.address_stat[address] = stat()
+            self.address_stat[address].add_statistics(stat())
 
     def add_stat(self, stat):
         if not issubclass(stat, Stat):
@@ -15,9 +15,8 @@ class AddressStatManager:
         for address in self.address_stat.values():
             address.add_statistics(stat())
 
-    def update(self, packet):
-        for address in self.address_stat.values():
-            address.update(packet)
+    def update(self, addr, packet):
+        self.address_stat[addr].update(packet)
 
     def calculate(self):
         for address in self.address_stat.values():

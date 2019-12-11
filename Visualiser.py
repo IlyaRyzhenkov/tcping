@@ -2,7 +2,7 @@ import sys
 
 
 class Visualiser:
-    def sent_packet_info(self, packet):
+    def sent_packet_info(self, packet, answer):
         pass
 
     @staticmethod
@@ -19,12 +19,12 @@ class StreamVisualiser(Visualiser):
     def __init__(self, timeout):
         self.timeout = timeout
 
-    def sent_packet_info(self, packet):
+    def sent_packet_info(self, packet, answer):
         if packet.time > self.timeout:
             sys.stdout.write('_')
             sys.stdout.flush()
             return
-        if packet.is_rst:
+        if answer.is_rst:
             sys.stdout.write('x')
             sys.stdout.flush()
             return
@@ -33,5 +33,5 @@ class StreamVisualiser(Visualiser):
 
 
 class TimeVisualiser(Visualiser):
-    def sent_packet_info(self, packet):
+    def sent_packet_info(self, packet, answer):
         print(packet.time)

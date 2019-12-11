@@ -55,15 +55,15 @@ class Program:
             return
         if parser.filter_by_addr_list(self.address):
             seq = parser.ack - 1
-            if seq in self.packets.keys():
+            if seq in self.packets.keys() and not self.packets[seq].is_answered:
                 self.packets[seq].is_answered = True
                 self.packets[seq].answer_time = recv_time
                 self.packets[seq].time = recv_time - \
                     self.packets[seq].send_time
                 if self.packets[seq].time < self.timeout:
                     self.count_of_received_packets += 1
-                    self.stats.update(self.packets[seq])
-                    self.visualiser.sent_packet_info(self.packets[seq])
+                    self.stats.update((parser.source_ip, parser.source_port), self.packets[seq])
+                    self.visualiser.sent_packet_info(self.packets[seq], parser)
 
     def send_and_receive_packets(self):
         self.create_socket()
