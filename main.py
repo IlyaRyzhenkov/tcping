@@ -5,6 +5,7 @@ import sys
 import Statistics
 import signal
 import Visualiser
+import SocketAPI
 
 
 def parse_args():
@@ -84,11 +85,12 @@ if __name__ == "__main__":
     else:
         visualiser = Visualiser.StreamVisualiser(parsed.timeout)
     stats = (Statistics.MinTimeStat, Statistics.MaxTimeStat, Statistics.AverageTimeStat)
+    sock = SocketAPI.SocketAPI()
     program = Program.Program(
         (source_ip, source_port),
         address,
         (packet_count, timeout, interval),
-        stats, visualiser,
+        stats, visualiser, sock,
         is_unlimited_mode)
     if is_unlimited_mode:
         signal.signal(signal.SIGUSR1, program.signal_handler)

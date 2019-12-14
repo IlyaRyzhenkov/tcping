@@ -1,15 +1,14 @@
-import socket
 import time
-import select
 import Creator
 import Parser
 import Statistics
 
 
 class Program:
-    def __init__(self, source_addr, address, params, stats, visualiser, mode):
+    def __init__(self, source_addr, address, params, stats, visualiser, socket, mode):
+        self.sock = socket
         self.source_ip, self.source_port = source_addr
-        self.source_ip = self.get_ip()
+        self.source_ip = self.sock.get_ip()
         self.address = address
         self.count, self.timeout, self.interval = params
         self.visualiser = visualiser
@@ -24,18 +23,11 @@ class Program:
         for addr in self.address:
             self.stats.add_address(addr)
 
-    @staticmethod
-    def get_ip():
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        ip = socket.gethostbyname('e1.ru')
-        s.connect((ip, 80))
-        return s.getsockname()[0]
-
     def create_socket(self):
-        tcp = socket.getprotobyname("tcp")
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, tcp)
-        self.sock.bind((self.source_ip, self.source_port))
-        self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+        self.sock.create()
+
+    def close_socket(self):
+        self.sock.close()
 
     def send_packet(self):
         for addr in self.address:
@@ -43,7 +35,7 @@ class Program:
                 self.source_ip, addr[0],
                 self.source_port, addr[1], self.seq)
             self.packets[self.seq] = packet
-            self.sock.sendto(packet.make_SYN_query(), addr)
+            self.sock.send_packet(packet.make_SYN_query(), addr)
             t = time.perf_counter()
             packet.send_time = t
             self.count_of_packets_sent += 1
@@ -78,16 +70,16 @@ class Program:
             i += 1
         if self.timeout > self.interval and self.count_of_received_packets < border:
             self.receive_data(self.timeout - self.interval)
+        self.sock.close()
 
     def receive_data(self, timeout):
         rest_timeout = timeout
         while True:
             t = time.perf_counter()
-            s, _, _ = select.select([self.sock], [], [], rest_timeout)
-            if s:
+            data = self.sock.recv_data(rest_timeout)
+            if data:
                 t = time.perf_counter() - t
                 rest_timeout = max(rest_timeout - t, 0)
-                data = s[0].recvfrom(1024)
                 self.parse_packet(data, time.perf_counter())
             else:
                 break
