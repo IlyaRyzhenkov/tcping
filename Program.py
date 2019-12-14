@@ -8,7 +8,7 @@ class Program:
     def __init__(self, source_addr, address, params, stats, visualiser, socket, mode):
         self.sock = socket
         self.source_ip, self.source_port = source_addr
-        self.source_ip = self.sock.get_ip()
+        self.source_ip = self.sock.get_host()
         self.address = address
         self.count, self.timeout, self.interval = params
         self.visualiser = visualiser
@@ -24,7 +24,7 @@ class Program:
             self.stats.add_address(addr)
 
     def create_socket(self):
-        self.sock.create()
+        self.sock.create(self.source_ip, self.source_port)
 
     def close_socket(self):
         self.sock.close()
