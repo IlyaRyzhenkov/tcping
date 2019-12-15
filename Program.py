@@ -19,7 +19,7 @@ class Program:
         self.count_of_received_packets = 0
         self.seq = 10
 
-        self.stats = Statistics.AddressStatManager(stats)
+        self.stats = stats
         for addr in self.address:
             self.stats.add_address(addr)
 

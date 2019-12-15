@@ -92,7 +92,8 @@ if __name__ == "__main__":
         visualiser = Visualiser.TimeVisualiser()
     else:
         visualiser = Visualiser.StreamVisualiser(parsed.timeout)
-    stats = (Statistics.MinTimeStat, Statistics.MaxTimeStat, Statistics.AverageTimeStat)
+    stats = Statistics.AddressStatManager((
+        Statistics.MinTimeStat, Statistics.MaxTimeStat, Statistics.AverageTimeStat))
     sock = SocketAPI.SocketAPI()
     timer = Timer.Timer()
     program = Program.Program(

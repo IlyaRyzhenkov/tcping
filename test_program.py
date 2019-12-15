@@ -19,7 +19,7 @@ class FSocket:
     def send_packet(self, data, address):
         self.send.append((address, data))
 
-    def recv_packets(self, timeout):
+    def recv_data(self, timeout):
         if self.packets_to_recv[self.ind][0] < timeout:
             data = self.packets_to_recv[self.ind][1]
             self.ind += 1
@@ -61,10 +61,41 @@ class FStat:
 
 
 class TestProgram(unittest.TestCase):
+    ADDRESS = (('1.1.1.1', 10), ('2.2.2.2', 20), ('3.3.3.3', 30))
+
     def test_send_packets(self):
-        address = (('1.1.1.1', 10), ('2.2.2.2', 20), ('3.3.3.3', 30))
         sock = FSocket([])
-        program = Program.Program(0, address, (1, 1, 1), FStat(), FVisualiser, sock, FTimer(), False)
+        program = Program.Program(0, self.ADDRESS, (1, 1, 1), FStat(), FVisualiser(), sock, FTimer(), False)
         program.send_packet()
 
         self.assertEqual(program.count_of_packets_sent, len(sock.send), 'Wrong count of send packets')
+        for i in range(3):
+            self.assertEqual(sock.send[i][0], self.ADDRESS[i], 'Wrong address')
+            self.assertIn((i + 1) * 10, program.packets, 'Wrong packets storage')
+            self.assertEqual(program.packets[(i + 1) * 10].send_time, i + 1, 'Wrong send time')
+        self.assertEqual(program.seq, 40, 'Wrong seq number')
+
+    def test_receive_data_1packet(self):
+        packets = ((1, (b'asdsasdasdasdasdasadsasdad', )), (20, (b'asdasdasdasdasdasdasdadasdasdasadsad', )))
+        sock = FSocket(packets)
+        timer = FTimer()
+        program = Program.Program(0, self.ADDRESS, (1, 5, 5), FStat(), FVisualiser(), sock, timer, False)
+        program.receive_data(5)
+        self.assertEqual(timer.time, 4)
+
+    def test_no_received_packets(self):
+        packets = ((20, (b'asdasdasdasdasdasdasdadasdasdasadsad',)),)
+        sock = FSocket(packets)
+        timer = FTimer()
+        program = Program.Program(0, self.ADDRESS, (1, 5, 5), FStat(), FVisualiser(), sock, timer, False)
+        program.receive_data(5)
+        self.assertEqual(timer.time, 1)
+
+    def test_receive_multiple_packets(self):
+        packets = ((1, (b'asdsasdasdasdasdasadsasdad',)), (1, (b'asdasdasdasdasdasdasdadasdasdasadsad',)),
+                   (1, (b'asdsasdasdasdasdasadsasdad',)), (20, (b'asdsasdasdasdasdasadsasdad',)))
+        sock = FSocket(packets)
+        timer = FTimer()
+        program = Program.Program(0, self.ADDRESS, (1, 5, 5), FStat(), FVisualiser(), sock, timer, False)
+        program.receive_data(5)
+        self.assertEqual(timer.time, 10)
