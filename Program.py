@@ -1,17 +1,17 @@
-import time
 import Creator
 import Parser
 import Statistics
 
 
 class Program:
-    def __init__(self, source_addr, address, params, stats, visualiser, socket, mode):
+    def __init__(self, source_port, address, params, stats, visualiser, socket, timer, mode):
         self.sock = socket
-        self.source_ip, self.source_port = source_addr
+        self.source_port = source_port
         self.source_ip = self.sock.get_ip()
         self.address = address
         self.count, self.timeout, self.interval = params
         self.visualiser = visualiser
+        self.timer = timer
         self.is_unlimited_mode = mode
 
         self.packets = {}
@@ -36,7 +36,7 @@ class Program:
                 self.source_port, addr[1], self.seq)
             self.packets[self.seq] = packet
             self.sock.send_packet(packet.make_SYN_query(), addr)
-            t = time.perf_counter()
+            t = self.timer.get_time()
             packet.send_time = t
             self.count_of_packets_sent += 1
             self.seq += 10
@@ -63,8 +63,7 @@ class Program:
             border = float('+inf')
         else:
             border = self.count
-        i = 0
-        while i < border:
+        for i in self.inf_range(border):
             self.send_packet()
             self.receive_data(self.interval)
             i += 1
@@ -75,14 +74,12 @@ class Program:
     def receive_data(self, timeout):
         rest_timeout = timeout
         while True:
-            t = time.perf_counter()
+            t = self.timer.get_time()
             data = self.sock.recv_data(rest_timeout)
-            if data:
-                t = time.perf_counter() - t
-                rest_timeout = max(rest_timeout - t, 0)
-                self.parse_packet(data, time.perf_counter())
-            else:
-                break
+            if not data: break
+            t = self.timer.get_time() - t
+            rest_timeout = max(rest_timeout - t, 0)
+            self.parse_packet(data, self.timer.get_time())
 
     def process_data(self):
         self.stats.calculate()
@@ -93,3 +90,10 @@ class Program:
 
     def signal_handler(self, a, b):
         self.process_data()
+
+    @staticmethod
+    def inf_range(num):
+        i = 0
+        while i < num:
+            yield i
+            i += 1

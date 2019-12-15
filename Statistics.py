@@ -45,13 +45,10 @@ class StatManager:
             stat.calculate()
 
     def get_values(self):
-        values = []
-        for stat in self.stats:
-            values.append(stat.get_value())
-        return values
+        return [stat.get_value() for stat in self.stats]
 
     def __str__(self):
-        return '\n'.join(str(stat) for stat in self.stats)
+        return '\n'.join(map(str, self.stats))
 
 
 class Stat:

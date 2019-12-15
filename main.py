@@ -6,6 +6,7 @@ import Statistics
 import signal
 import Visualiser
 import SocketAPI
+import Timer
 
 
 def parse_args():
@@ -23,13 +24,21 @@ def parse_args():
     arg_parser.add_argument('-u', '--unlimited', action='store_true',
                             help='Property for unlimited count of pings. '
                                  'You can get statistics by SIGUSR1')
-    arg_parser.add_argument('-a', '--add',metavar=('HOST', 'PORT') ,
+    arg_parser.add_argument('-a', '--add',metavar=('HOST', 'PORT'),
                             nargs=2, action='append', help='Add another address for ping')
     arg_parser.add_argument('-v', action='store_true', help='Shows time for every packet')
+    arg_parser.add_argument('-sp', '--source_port', type=check_port, default=0,
+                            help='source port for sending packets (default is 0)')
     res = arg_parser.parse_args()
     address = parse_additional_address(res.add)
     address.append((res.dest_ip, res.dest_port))
-    return res, address, res.packet, res.timeout, res.interval, res.unlimited
+    return res, address
+
+
+def check_port(port):
+    if not (0 <= int(port) <= 65535):
+        raise argparse.ArgumentTypeError
+    return int(port)
 
 
 def check_ip(ip):
@@ -39,14 +48,14 @@ def check_ip(ip):
 def check_non_negative_int(value):
     ivalue = int(value)
     if ivalue < 0:
-        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
+        raise argparse.ArgumentTypeError(f"{value} is an invalid positive int value")
     return ivalue
 
 
 def check_non_negative_float(value):
     fvalue = float(value)
     if fvalue < 0:
-        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
+        raise argparse.ArgumentTypeError(f"{value} is an invalid positive float value")
     return fvalue
 
 
@@ -59,7 +68,7 @@ def parse_additional_address(address_list):
             ip, port = parse_address(address)
             parsed.append((ip, port))
         except Exception:
-            print('Wrong additional address {}'.format(' '.join(address)))
+            sys.stderr.write('Wrong additional address {}'.format(' '.join(address)))
     return parsed
 
 
@@ -67,7 +76,7 @@ def parse_address(address):
     ip, port = address
     ip = socket.gethostbyname(ip)
     port = int(port)
-    if 65536 < port or port < 0:
+    if not (0 <= port <= 65535):
         raise ValueError
     return ip, port
 
@@ -77,23 +86,23 @@ if __name__ == "__main__":
         print('Windows don\'t supported')
         sys.exit(1)
 
-    source_ip = '0.0.0.0'
-    source_port = 0
-    parsed, address, packet_count, timeout, interval, is_unlimited_mode = parse_args()
+    parsed, address = parse_args()
+    source_port = parsed.source_port
     if parsed.v:
         visualiser = Visualiser.TimeVisualiser()
     else:
         visualiser = Visualiser.StreamVisualiser(parsed.timeout)
     stats = (Statistics.MinTimeStat, Statistics.MaxTimeStat, Statistics.AverageTimeStat)
     sock = SocketAPI.SocketAPI()
+    timer = Timer.Timer()
     program = Program.Program(
-        (source_ip, source_port),
+        source_port,
         address,
-        (packet_count, timeout, interval),
-        stats, visualiser, sock,
-        is_unlimited_mode)
-    if is_unlimited_mode:
+        (parsed.packet_count, parsed.timeout, parsed.interval),
+        stats, visualiser, sock, timer,
+        parsed.is_unlimited_mode)
+    if parsed.is_unlimited_mode:
         signal.signal(signal.SIGUSR1, program.signal_handler)
     program.send_and_receive_packets()
-    if not is_unlimited_mode:
+    if not parsed.is_unlimited_mode:
         program.process_data()

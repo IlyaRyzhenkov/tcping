@@ -6,17 +6,14 @@ class Parser:
         self.parse_data(data)
 
     def parse_data(self, data):
-        self.segment_len = int.from_bytes(data[2:4], byteorder="big")
+        self.segment_len = struct.unpack('>H', data[2:4])[0]
         self.proto = data[9]
         self.source_ip = "{}.{}.{}.{}".format(*data[12:16])
         self.dest_ip = "{}.{}.{}.{}".format(*data[16:20])
         if self.proto != 6:
             return
-        self.source_port = struct.unpack('>H', data[20:22])[0]
-        self.dest_port = struct.unpack('>H', data[22:24])[0]
-        self.seqence = struct.unpack('>I', data[24:28])[0]
-        self.ack = struct.unpack('>I', data[28:32])[0]
-        self.flags = struct.unpack('>H', data[32:34])[0]
+        self.source_port, self.dest_port,\
+        self.seqence, self.ack, self.flags = struct.unpack('>HHIIH', data[20:34])
         self.is_fin = self.flags & 1 == 1
         self.is_syn = self.flags & 2 == 2
         self.is_ack = self.flags & 16 == 16
@@ -39,8 +36,8 @@ class Parser:
         return message
 
     def filter_by_addr_list(self, addr_list):
-        for addr in addr_list:
-            if self.source_ip == addr[0]:
+        for (addr, _) in addr_list:
+            if self.source_ip == addr:
                 return True
         return False
 
