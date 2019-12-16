@@ -99,11 +99,11 @@ if __name__ == "__main__":
     program = Program.Program(
         source_port,
         address,
-        (parsed.packet_count, parsed.timeout, parsed.interval),
+        (parsed.packet, parsed.timeout, parsed.interval),
         stats, visualiser, sock, timer,
-        parsed.is_unlimited_mode)
-    if parsed.is_unlimited_mode:
+        parsed.unlimited)
+    if parsed.unlimited:
         signal.signal(signal.SIGUSR1, program.signal_handler)
     program.send_and_receive_packets()
-    if not parsed.is_unlimited_mode:
+    if not parsed.unlimited:
         program.process_data()
