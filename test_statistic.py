@@ -5,6 +5,14 @@ import Statistics
 class FPacket:
     def __init__(self, time):
         self.time = time
+        self.is_answered = False
+        self.send_time = 0
+
+    def __eq__(self, other):
+        return self.time == other.time and self.is_answered == other.is_answered and self.send_time == other.send_time
+
+    def __copy__(self):
+        return FPacket(self.time)
 
 
 class TestStatistic(unittest.TestCase):
@@ -42,3 +50,27 @@ class TestStatistic(unittest.TestCase):
         manager.calculate()
         res = manager.get_values()
         self.assertListEqual(res, [1.0, 33.0], "Wrong stat manager")
+
+    def test_address_stat_manager(self):
+        manager = Statistics.AddressStatManager((
+            Statistics.MaxTimeStat, Statistics.MinTimeStat, Statistics.AverageTimeStat))
+        manager.add_address(('1.1.1.1', 80))
+        manager.add_address(('2.2.2.2', 80))
+        manager.update(('1.1.1.1', 80), FPacket(10))
+        manager.update(('1.1.1.1', 80), FPacket(6))
+        manager.update(('2.2.2.2', 80), FPacket(300))
+        manager.calculate()
+        res = manager.get_values()
+        self.assertEqual(res[0][0], ('1.1.1.1', 80), 'Wrong first addr')
+        self.assertListEqual(res[0][1].get_values(), [10, 6, 8.0], 'Wrong stat for first addr')
+        self.assertEqual(res[1][0], ('2.2.2.2', 80), 'Wrong secong addr')
+        self.assertListEqual(res[1][1].get_values(), [300, 300, 300.0], 'Wrong stat for second addr')
+
+    def test_add_stat(self):
+        manager = Statistics.AddressStatManager((Statistics.MaxTimeStat,))
+        manager.add_address(('1.1.1.1', 80))
+        manager.update(('1.1.1.1', 80), FPacket(10))
+        manager.add_stat(Statistics.MinTimeStat)
+        manager.update(('1.1.1.1', 80), FPacket(300))
+        res = manager.get_values()
+        self.assertListEqual(res[0][1].get_values(), [300, 300], 'Wrong add stat')

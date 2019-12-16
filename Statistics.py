@@ -1,7 +1,7 @@
 class AddressStatManager:
     def __init__(self, stats):
         self.address_stat = {}
-        self.stats = stats
+        self.stats = list(stats)
 
     def add_address(self, address):
         self.address_stat[address] = StatManager()
