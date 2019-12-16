@@ -38,6 +38,7 @@ class Program:
             self.sock.send_packet(packet.make_SYN_query(), addr)
             t = self.timer.get_time()
             packet.send_time = t
+            # Запоминаю время отправки пакета
             self.count_of_packets_sent += 1
             self.seq += 10
 
@@ -52,6 +53,7 @@ class Program:
                 self.packets[seq].answer_time = recv_time
                 self.packets[seq].time = recv_time - \
                     self.packets[seq].send_time
+                # расчитывается время ответа
                 if self.packets[seq].time < self.timeout:
                     self.count_of_received_packets += 1
                     self.stats.update((parser.source_ip, parser.source_port), self.packets[seq])
@@ -79,6 +81,7 @@ class Program:
             if not data: break
             t = self.timer.get_time() - t
             rest_timeout = max(rest_timeout - t, 0)
+            # вызывается парсер с временем приема ответа
             self.parse_packet(data, self.timer.get_time())
 
     def process_data(self):
