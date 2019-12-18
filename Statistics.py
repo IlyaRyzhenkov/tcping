@@ -107,7 +107,8 @@ class AverageTimeStat(Stat):
         self.count += 1
 
     def calculate(self):
-        self.result = self.sum / self.count
+        if self.count > 0:
+            self.result = self.sum / self.count
 
     def get_value(self):
         return self.result
