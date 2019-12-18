@@ -1,12 +1,8 @@
 import socket
 import argparse
-import Program
+from resouces import Program, Statistics, Visualiser, SocketAPI, Timer
 import sys
-import Statistics
 import signal
-import Visualiser
-import SocketAPI
-import Timer
 
 
 def parse_args():

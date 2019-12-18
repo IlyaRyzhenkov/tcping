@@ -1,5 +1,6 @@
 import itertools
 import struct
+import enum
 
 
 class HeaderCreator:
@@ -27,6 +28,7 @@ class HeaderCreator:
         self.seq = seq_num.to_bytes(4, byteorder='big')
         self.TCP_checksum = self.get_TCP_checksum()
 
+        self.answer_type = None
         self.send_time = 0
         self.answer_time = 0
         self.is_answered = False
@@ -75,3 +77,8 @@ class HeaderCreator:
             self.WINDOW_SIZE, self.TCP_checksum, self.URGENT_POINTER
         ])
         return IP_header + TCP_header
+
+
+class TcpPacketType(enum.Enum):
+    RST = 0
+    ACK = 1

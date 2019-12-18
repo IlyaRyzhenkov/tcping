@@ -1,5 +1,5 @@
 import unittest
-import Statistics
+from resouces import Statistics
 
 
 class FPacket:
@@ -63,7 +63,7 @@ class TestStatistic(unittest.TestCase):
         res = manager.get_values()
         self.assertEqual(res[0][0], ('1.1.1.1', 80), 'Wrong first addr')
         self.assertListEqual(res[0][1].get_values(), [10, 6, 8.0], 'Wrong stat for first addr')
-        self.assertEqual(res[1][0], ('2.2.2.2', 80), 'Wrong secong addr')
+        self.assertEqual(res[1][0], ('2.2.2.2', 80), 'Wrong second addr')
         self.assertListEqual(res[1][1].get_values(), [300, 300, 300.0], 'Wrong stat for second addr')
 
     def test_add_stat(self):

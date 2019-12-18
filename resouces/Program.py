@@ -1,6 +1,4 @@
-import Creator
-import Parser
-import Statistics
+from resouces import TCPPacketCreator, TCPPacketParser
 import itertools
 
 
@@ -32,7 +30,7 @@ class Program:
 
     def send_packet(self):
         for addr in self.address:
-            packet = Creator.HeaderCreator(
+            packet = TCPPacketCreator.HeaderCreator(
                 self.source_ip, addr[0],
                 self.source_port, addr[1], self.seq)
             self.packets[self.seq] = packet
@@ -45,13 +43,15 @@ class Program:
             self.stats.update_on_sent(addr, packet)
 
     def parse_packet(self, data, recv_time):
-        parser = Parser.Parser(data[0])
+        parser = TCPPacketParser.Parser(data[0])
         if parser.proto != 6:
             return
         if parser.filter_by_addr_list(self.address):
             seq = parser.ack - 1
             if seq in self.packets.keys() and not self.packets[seq].is_answered:
                 self.packets[seq].is_answered = True
+                self.packets[seq].answer_type = (
+                    TCPPacketCreator.TcpPacketType.RST if parser.is_rst else TCPPacketCreator.TcpPacketType.ACK)
                 self.packets[seq].answer_time = recv_time
                 self.packets[seq].time = recv_time - \
                     self.packets[seq].send_time

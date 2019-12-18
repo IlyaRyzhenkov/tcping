@@ -8,7 +8,8 @@ class Visualiser:
     @staticmethod
     def sent_stat_info(stat_mng):
         print()
-        print(stat_mng)
+        print(stat_mng.get_non_table_stat())
+        print(stat_mng.get_table())
 
 
 class StreamVisualiser(Visualiser):
@@ -27,4 +28,5 @@ class StreamVisualiser(Visualiser):
 
 class TimeVisualiser(Visualiser):
     def sent_packet_info(self, packet, answer):
-        print(f'{packet.dest_ip}:{packet.dest_port} {round(packet.time, 3)}')
+        packet_type = 'RST' if answer.is_rst else 'ACK'
+        print(f'{packet.dest_ip}:{packet.dest_port} {round(packet.time, 3)} ({packet_type})')

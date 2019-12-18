@@ -1,7 +1,6 @@
 import unittest
-import Program
-import Visualiser
-import test_statistic
+from resouces import Program, Visualiser
+from tests import test_statistic
 import copy
 
 
