@@ -27,7 +27,7 @@ def parse_args():
     arg_parser.add_argument('-a', '--add',metavar=('HOST', 'PORT'),
                             nargs=2, action='append', help='Add another address for ping')
     arg_parser.add_argument('-v', action='store_true', help='Shows time for every packet')
-    arg_parser.add_argument('-sp', '--source_port', type=check_port, default=0,
+    arg_parser.add_argument('-P', '--source_port', type=check_port, default=0,
                             help='source port for sending packets (default is 0)')
     res = arg_parser.parse_args()
     address = parse_additional_address(res.add)
@@ -83,7 +83,7 @@ def parse_address(address):
 
 if __name__ == "__main__":
     if sys.platform == 'win32':
-        print('Windows don\'t supported')
+        sys.stderr.write('Windows don\'t supported')
         sys.exit(1)
 
     parsed, address = parse_args()
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         visualiser = Visualiser.TimeVisualiser()
     else:
         visualiser = Visualiser.StreamVisualiser(parsed.timeout)
-    stats = Statistics.AddressStatManager((
+    stats = Statistics.AddressStatManager((Statistics.PacketStatusStat,
         Statistics.MinTimeStat, Statistics.MaxTimeStat, Statistics.AverageTimeStat))
     sock = SocketAPI.SocketAPI()
     timer = Timer.Timer()

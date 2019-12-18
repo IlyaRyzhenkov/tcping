@@ -1,6 +1,7 @@
 import Creator
 import Parser
 import Statistics
+import itertools
 
 
 class Program:
@@ -41,6 +42,7 @@ class Program:
             # Запоминаю время отправки пакета
             self.count_of_packets_sent += 1
             self.seq += 10
+            self.stats.update_on_sent(addr, packet)
 
     def parse_packet(self, data, recv_time):
         parser = Parser.Parser(data[0])
@@ -56,7 +58,7 @@ class Program:
                 # расчитывается время ответа
                 if self.packets[seq].time < self.timeout:
                     self.count_of_received_packets += 1
-                    self.stats.update((parser.source_ip, parser.source_port), self.packets[seq])
+                    self.stats.update_on_receive((parser.source_ip, parser.source_port), self.packets[seq])
                     self.visualiser.sent_packet_info(self.packets[seq], parser)
 
     def send_and_receive_packets(self):
@@ -65,7 +67,7 @@ class Program:
             border = float('+inf')
         else:
             border = self.count
-        for i in self.inf_range(border):
+        for i in itertools.count() if self.is_unlimited_mode else range(self.count):
             self.send_packet()
             self.receive_data(self.interval)
             i += 1
@@ -78,18 +80,18 @@ class Program:
         while True:
             t = self.timer.get_time()
             data = self.sock.recv_data(rest_timeout)
-            if not data: break
+            if not data:
+                break
             t = self.timer.get_time() - t
             rest_timeout = max(rest_timeout - t, 0)
             # вызывается парсер с временем приема ответа
             self.parse_packet(data, self.timer.get_time())
+            if self.count_of_packets_sent == self.count_of_received_packets:
+                break
 
     def process_data(self):
         self.stats.calculate()
-        self.visualiser.sent_stat_info((
-            self.count_of_packets_sent, self.count_of_received_packets,
-            self.count_of_packets_sent - self.count_of_received_packets),
-            self.stats)
+        self.visualiser.sent_stat_info(self.stats)
 
     def signal_handler(self, a, b):
         self.process_data()
