@@ -22,16 +22,13 @@ class StreamVisualiser(Visualiser):
     def sent_packet_info(self, packet, answer):
         if packet.time > self.timeout:
             sys.stdout.write('_')
-            sys.stdout.flush()
-            return
-        if answer.is_rst:
+        elif answer.is_rst:
             sys.stdout.write('x')
-            sys.stdout.flush()
-            return
-        sys.stdout.write('*')
+        else:
+            sys.stdout.write('*')
         sys.stdout.flush()
 
 
 class TimeVisualiser(Visualiser):
     def sent_packet_info(self, packet, answer):
-        print(packet.time)
+        print(f'{packet.dest_ip}:{packet.dest_port} {round(packet.time, 3)}')

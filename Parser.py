@@ -12,8 +12,8 @@ class Parser:
         self.dest_ip = "{}.{}.{}.{}".format(*data[16:20])
         if self.proto != 6:
             return
-        self.source_port, self.dest_port,\
-        self.seqence, self.ack, self.flags = struct.unpack('>HHIIH', data[20:34])
+        (self.source_port, self.dest_port,
+        self.seqence, self.ack, self.flags) = struct.unpack('>HHIIH', data[20:34])
         self.is_fin = self.flags & 1 == 1
         self.is_syn = self.flags & 2 == 2
         self.is_ack = self.flags & 16 == 16
