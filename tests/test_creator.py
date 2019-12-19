@@ -1,5 +1,5 @@
 import unittest
-from resouces import TCPPacketCreator
+from resources import TCPPacketCreator
 
 
 class TestCreator(unittest.TestCase):

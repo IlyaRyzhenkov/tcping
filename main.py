@@ -1,6 +1,6 @@
 import socket
 import argparse
-from resouces import Program, Statistics, Visualiser, SocketAPI, Timer
+from resources import Program, Statistics, Visualiser, SocketAPI, Timer
 import sys
 import signal
 

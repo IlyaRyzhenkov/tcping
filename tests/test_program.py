@@ -1,5 +1,5 @@
 import unittest
-from resouces import Program, Visualiser
+from resources import Program, Visualiser
 from tests import test_statistic
 import copy
 

@@ -1,4 +1,4 @@
-from resouces import TCPPacketCreator
+from resources import TCPPacketCreator
 
 
 class AddressStatManager:
@@ -46,15 +46,15 @@ class AddressStatManager:
 
     def get_table(self):
         stats = [stat.NAME for stat in self.table_stats]
-        table = '      IP        PORT |' + '|'.join(stats) + '|\n'
+        table = '      IP       |PORT |' + '|'.join(stats) + '|\n'
         max_ip = max(map(len, (addr[0] for addr in self.address_stat.keys())))
         for addr, mng in self.address_stat.items():
             row = ('{ip:^15}:{port:^5}|'.format(ip=addr[0], port=addr[1]) +
-                   ''.join(stat.get_format_data() for stat in mng.stats) + '\n')
+                   ''.join(stat.get_format_data() for stat in mng.table_stats) + '\n')
             table += row
         return table
 
-    def get_non_table_stat(self):
+    def get_non_table_stats(self):
         return '\n'.join(f'{address[0]}:{address[1]}\n{stat.get_non_table_stats()}'
                          for address, stat in self.address_stat.items())
 
@@ -63,10 +63,13 @@ class StatManager:
     def __init__(self):
         self.stats = []
         self.non_table_stats = []
+        self.table_stats = []
 
     def add_statistics(self, stat):
         self.stats.append(stat)
-        if not stat.IN_TABLE:
+        if stat.IN_TABLE:
+            self.table_stats.append(stat)
+        else:
             self.non_table_stats.append(stat)
 
     def update_on_receive(self, packet):
@@ -84,7 +87,7 @@ class StatManager:
     def get_values(self):
         return [stat.get_value() for stat in self.stats]
 
-    def get_non_table_stat(self):
+    def get_non_table_stats(self):
         return '\n'.join(map(str, self.non_table_stats))
 
     def __str__(self):
@@ -133,7 +136,9 @@ class MaxTimeStat(Stat):
         return 'Max time: Not calculated'
 
     def get_format_data(self):
-        return '{max:^8}|'.format(max=self.max)
+        if self.max != float('-inf'):
+            return '{max:^8}|'.format(max=self.max)
+        return 'no data |'
 
 
 class MinTimeStat(Stat):
@@ -158,7 +163,9 @@ class MinTimeStat(Stat):
         return 'Min time: Not calculated'
 
     def get_format_data(self):
-        return '{min:^8}|'.format(min=self.min)
+        if self.min != float('+inf'):
+            return '{min:^8}|'.format(min=self.min)
+        return 'no data |'
 
 
 class AverageTimeStat(Stat):
@@ -168,25 +175,30 @@ class AverageTimeStat(Stat):
         self.sum = 0
         self.count = 0
         self.result = 0
+        self.is_calculated = False
 
     def update_on_receive(self, packet):
         self.sum += packet.time
         self.count += 1
+        self.is_calculaded = False
 
     def calculate(self):
         if self.count > 0:
             self.result = round(self.sum / self.count, 3)
+            self.is_calculated = True
 
     def get_value(self):
         return self.result
 
     def __str__(self):
-        if self.result:
+        if self.is_calculated:
             return 'Average time: {}'.format(self.result)
         return 'Average time: Not calculated'
 
     def get_format_data(self):
-        return '{avg:^12}|'.format(avg=self.result)
+        if self.is_calculated:
+            return '{avg:^12}|'.format(avg=self.result)
+        return '  no data   |'
 
 
 class PacketStatusStat(Stat):

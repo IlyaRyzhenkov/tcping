@@ -1,4 +1,4 @@
-from resouces import TCPPacketParser
+from resources import TCPPacketParser
 import unittest
 
 

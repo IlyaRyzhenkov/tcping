@@ -1,5 +1,5 @@
 import unittest
-from resouces import Statistics
+from resources import Statistics
 
 
 class FPacket:

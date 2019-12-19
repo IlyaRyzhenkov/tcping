@@ -1,4 +1,4 @@
-from resouces import TCPPacketCreator, TCPPacketParser
+from resources import TCPPacketCreator, TCPPacketParser
 import itertools
 
 
