@@ -1,7 +1,7 @@
 import struct
 
 
-class Parser:
+class TCPPacketParser:
     def __init__(self, data):
         self.parse_data(data)
 
@@ -13,7 +13,8 @@ class Parser:
         if self.proto != 6:
             return
         (self.source_port, self.dest_port,
-        self.seqence, self.ack, self.flags) = struct.unpack('>HHIIH', data[20:34])
+         self.seqence, self.ack,
+         self.flags) = struct.unpack('>HHIIH', data[20:34])
         self.is_fin = self.flags & 1 == 1
         self.is_syn = self.flags & 2 == 2
         self.is_ack = self.flags & 16 == 16
@@ -40,4 +41,3 @@ class Parser:
             if self.source_ip == addr:
                 return True
         return False
-

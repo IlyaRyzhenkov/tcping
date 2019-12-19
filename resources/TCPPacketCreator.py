@@ -3,7 +3,7 @@ import struct
 import enum
 
 
-class HeaderCreator:
+class TCPPacketCreator:
     IP_VERSION_LENGHT = b'\x45\x00\x00\x28'
     # version 4, IHL 5, type of service, Total length 40
     IP_FRAGMENTATION = b'\xab\xcd\x00\x00'
@@ -45,8 +45,9 @@ class HeaderCreator:
                 prev = i
 
     def get_IP_checksum(self):
-        presum = sum(self.get_pairs(
-            itertools.chain(self.source_ip, self.dest_ip))) + self.CONST_IP_CHECKSUM
+        presum = (sum(self.get_pairs(
+            itertools.chain(self.source_ip, self.dest_ip))) +
+                  self.CONST_IP_CHECKSUM)
 
         if presum >> 16 > 0:
             div = presum >> 16
@@ -55,9 +56,10 @@ class HeaderCreator:
 
     def get_TCP_checksum(self):
         presum = sum(self.get_pairs(
-            itertools.chain(b'\x00\x06', self.source_ip, self.dest_ip,
-                            b'\x00\x14', self.source_port,
-                            self.dest_port, self.seq))) + self.CONST_TCP_CHECKSUM
+            itertools.chain(
+                b'\x00\x06', self.source_ip, self.dest_ip,
+                b'\x00\x14', self.source_port,
+                self.dest_port, self.seq))) + self.CONST_TCP_CHECKSUM
         if presum >> 16 > 0:
             div = presum >> 16
             presum = (presum & 65535) + div
@@ -70,10 +72,12 @@ class HeaderCreator:
 
     def make_SYN_query(self):
         IP_header = b''.join(
-            [self.IP_VERSION_LENGHT, self.IP_FRAGMENTATION, self.TTL_TCP_PROTOCOL,
-             self.IP_checksum, self.source_ip, self.dest_ip])
+            [self.IP_VERSION_LENGHT, self.IP_FRAGMENTATION,
+             self.TTL_TCP_PROTOCOL, self.IP_checksum,
+             self.source_ip, self.dest_ip])
         TCP_header = b''.join([
-            self.source_port, self.dest_port, self.seq, self.ACK, self.TCP_HEADER_LEN_FLAGS,
+            self.source_port, self.dest_port, self.seq,
+            self.ACK, self.TCP_HEADER_LEN_FLAGS,
             self.WINDOW_SIZE, self.TCP_checksum, self.URGENT_POINTER
         ])
         return IP_header + TCP_header

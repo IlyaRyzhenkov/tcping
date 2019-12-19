@@ -50,13 +50,16 @@ class AddressStatManager:
         max_ip = max(map(len, (addr[0] for addr in self.address_stat.keys())))
         for addr, mng in self.address_stat.items():
             row = ('{ip:^15}:{port:^5}|'.format(ip=addr[0], port=addr[1]) +
-                   ''.join(stat.get_format_data() for stat in mng.table_stats) + '\n')
+                   ''.join(
+                       stat.get_format_data() for stat in mng.table_stats) +
+                   '\n')
             table += row
         return table
 
     def get_non_table_stats(self):
-        return '\n'.join(f'{address[0]}:{address[1]}\n{stat.get_non_table_stats()}'
-                         for address, stat in self.address_stat.items())
+        return '\n'.join(
+            f'{address[0]}:{address[1]}\n{stat.get_non_table_stats()}'
+            for address, stat in self.address_stat.items())
 
 
 class StatManager:
@@ -227,10 +230,12 @@ class PacketStatusStat(Stat):
         self.percent_loss = round((self.loss / self.send) * 100)
 
     def get_value(self):
-        return self.send, self.receive, self.loss, self.rst, self.percent_receive, self.percent_loss
+        return (self.send, self.receive, self.loss,
+                self.rst, self.percent_receive, self.percent_loss)
 
     def __str__(self):
         if self.is_calculated:
             return f'Packet send: {self.send}\n' \
-                   f'Packet received: {self.receive}, {self.percent_receive}% ({self.rst} RST)\n' \
+                   f'Packet received: {self.receive},' \
+                   f'{self.percent_receive}%({self.rst} RST)\n' \
                    f'Packet loss: {self.loss}, {self.percent_loss}%'

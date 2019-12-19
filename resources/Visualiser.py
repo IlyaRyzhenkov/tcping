@@ -33,4 +33,5 @@ class TimeVisualiser(Visualiser):
         packet_ip = '{}.{}.{}.{}'.format(*packet.dest_ip)
         packet_port = int.from_bytes(packet.dest_port, byteorder='big')
         print(packet_ip, packet_port)
-        print(f'{packet_ip}:{packet_port} {round(packet.time, 3)} ({packet_type})')
+        print(f'{packet_ip}:{packet_port} {round(packet.time, 3)}'
+              f'({packet_type})')

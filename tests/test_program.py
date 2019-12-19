@@ -82,20 +82,30 @@ class FakeStat:
 
 class TestProgram(unittest.TestCase):
     ADDRESS = (('1.1.1.1', 10), ('2.2.2.2', 20), ('3.3.3.3', 30))
-    VALID_PACKET = b"\x45\x00\x00\x2c\x00\x00\x40\x00\x36\x06\x0b\xf3\xd4\xc1\xa3\x07" \
-                   b"\xc0\xa8\x00\x68\x00\x50\x00\x00\xee\x94\xcf\x8f\x00\x00\x00\x0b" \
-                   b"\x60\x12\x72\x10\x2e\xe9\x00\x00\x02\x04\x05\x78\x00\x00"
+    VALID_PACKET = b"\x45\x00\x00\x2c\x00\x00\x40\x00\x36\x06\x0b" \
+                   b"\xf3\xd4\xc1\xa3\x07\xc0\xa8\x00\x68\x00\x50" \
+                   b"\x00\x00\xee\x94\xcf\x8f\x00\x00\x00\x0b\x60" \
+                   b"\x12\x72\x10\x2e\xe9\x00\x00\x02\x04\x05\x78" \
+                   b"\x00\x00"
 
     def test_send_packets(self):
         sock = FakeSocket([])
-        program = Program.Program(0, self.ADDRESS, (1, 1, 1), FakeStat(), FakeVisualiser(), sock, FakeTimer(), False)
+        program = Program.Program(
+            0, self.ADDRESS, (1, 1, 1), FakeStat(),
+            FakeVisualiser(), sock, FakeTimer(), False)
         program.send_packet()
 
-        self.assertEqual(program.count_of_packets_sent, len(sock.send), 'Wrong count of send packets')
+        self.assertEqual(
+            program.count_of_packets_sent, len(sock.send),
+            'Wrong count of send packets')
         for i in range(3):
-            self.assertEqual(sock.send[i][0], self.ADDRESS[i], 'Wrong address')
-            self.assertIn((i + 1) * 10, program.packets, 'Wrong packets storage')
-            self.assertEqual(program.packets[(i + 1) * 10].send_time, i + 1, 'Wrong send time')
+            self.assertEqual(
+                sock.send[i][0], self.ADDRESS[i], 'Wrong address')
+            self.assertIn(
+                (i + 1) * 10, program.packets, 'Wrong packets storage')
+            self.assertEqual(
+                program.packets[(i + 1) * 10].send_time, i + 1,
+                'Wrong send time')
         self.assertEqual(program.seq, 40, 'Wrong seq number')
 
     def test_receive_data_1packet(self):
@@ -103,7 +113,9 @@ class TestProgram(unittest.TestCase):
                    (20, (b'asdasdasdasdasdasdasdadasdasdasadsad', )))
         sock = FakeSocket(packets)
         timer = FakeTimer()
-        program = Program.Program(0, self.ADDRESS, (1, 5, 5), FakeStat(), FakeVisualiser(), sock, timer, False)
+        program = Program.Program(
+            0, self.ADDRESS, (1, 5, 5), FakeStat(),
+            FakeVisualiser(), sock, timer, False)
         program.receive_data(5)
         self.assertEqual(timer.time, 3)
 
@@ -111,7 +123,9 @@ class TestProgram(unittest.TestCase):
         packets = ((20, (b'asdasdasdasdasdasdasdadasdasdasadsad',)),)
         sock = FakeSocket(packets)
         timer = FakeTimer()
-        program = Program.Program(0, self.ADDRESS, (1, 5, 5), FakeStat(), FakeVisualiser(), sock, timer, False)
+        program = Program.Program(
+            0, self.ADDRESS, (1, 5, 5), FakeStat(),
+            FakeVisualiser(), sock, timer, False)
         program.receive_data(5)
         self.assertEqual(timer.time, 1)
 
@@ -122,67 +136,99 @@ class TestProgram(unittest.TestCase):
                    (20, (b'asdsasdasdasdasdasadsasdad',)))
         sock = FakeSocket(packets)
         timer = FakeTimer()
-        program = Program.Program(0, self.ADDRESS, (1, 5, 5), FakeStat(), FakeVisualiser(), sock, timer, False)
+        program = Program.Program(
+            0, self.ADDRESS, (1, 5, 5), FakeStat(),
+            FakeVisualiser(), sock, timer, False)
         program.receive_data(5)
         self.assertEqual(timer.time, 3)
 
     def test_parse_valid_packet(self):
         address = (('212.193.163.7', 80),)
-        program = Program.Program(0, address, (1, 3, 3), FakeStat(), FakeVisualiser(), FakeSocket([]), FakeTimer(), False)
+        program = Program.Program(
+            0, address, (1, 3, 3), FakeStat(), FakeVisualiser(),
+            FakeSocket([]), FakeTimer(), False)
         program.packets[10] = test_statistic.FPacket(0)
         program.parse_packet((self.VALID_PACKET, ('212.193.163.7', 80)), 2)
-        self.assertTrue(program.packets[10].is_answered, 'Wrong is_answered flag value')
-        self.assertEqual(program.packets[10].time, 2, 'Wrong packet time')
-        self.assertEqual(program.count_of_received_packets, 1, 'Wrong count of received packets')
+        self.assertTrue(program.packets[10].is_answered,
+                        'Wrong is_answered flag value')
+        self.assertEqual(program.packets[10].time, 2,
+                         'Wrong packet time')
+        self.assertEqual(program.count_of_received_packets, 1,
+                         'Wrong count of received packets')
 
     def test_parse_two_valid_packets(self):
         address = (('212.193.163.7', 80),)
-        program = Program.Program(0, address, (1, 3, 3), FakeStat(), FakeVisualiser(), FakeSocket([]), FakeTimer(), False)
+        program = Program.Program(
+            0, address, (1, 3, 3), FakeStat(), FakeVisualiser(),
+            FakeSocket([]), FakeTimer(), False)
         program.packets[10] = test_statistic.FPacket(0)
-        program.parse_packet((self.VALID_PACKET, ('212.193.163.7', 80)), 2)
-        program.parse_packet((self.VALID_PACKET, ('212.193.163.7', 80)), 10)
-        self.assertTrue(program.packets[10].is_answered, 'Wrong is_answered flag value')
-        self.assertEqual(program.packets[10].time, 2, 'Wrong packet time')
-        self.assertEqual(program.count_of_received_packets, 1, 'Wrong count of received packets')
+        program.parse_packet((self.VALID_PACKET,
+                              ('212.193.163.7', 80)), 2)
+        program.parse_packet((self.VALID_PACKET,
+                              ('212.193.163.7', 80)), 10)
+        self.assertTrue(program.packets[10].is_answered,
+                        'Wrong is_answered flag value')
+        self.assertEqual(program.packets[10].time, 2,
+                         'Wrong packet time')
+        self.assertEqual(program.count_of_received_packets, 1,
+                         'Wrong count of received packets')
 
     def test_parse_non_tcp(self):
         address = (('212.193.163.7', 80),)
-        program = Program.Program(0, address, (1, 3, 3), FakeStat(), FakeVisualiser(), FakeSocket([]), FakeTimer(), False)
+        program = Program.Program(
+            0, address, (1, 3, 3), FakeStat(), FakeVisualiser(),
+            FakeSocket([]), FakeTimer(), False)
         program.packets[10] = test_statistic.FPacket(0)
         val1 = copy.deepcopy(program.packets)
-        program.parse_packet((b'asdasdadsasdasdasdasdasdasdasdasdasdasdasdasdasd', ('212.193.163.7', 80)), 0)
+        program.parse_packet(
+            (b'asdasdadsasdasdasdasdasdasdasdasdasdasdasdasdasd',
+             ('212.193.163.7', 80)), 0)
         val2 = program.packets
-        self.assertDictEqual(val1, val2, 'Invalid packet don\'t sorted')
+        self.assertDictEqual(val1, val2,
+                             'Invalid packet don\'t sorted')
 
     def test_parse_bad_addr_packet(self):
-        packet = b"\x45\x00\x00\x2c\x00\x00\x40\x00\x36\x06\x0b\xf3\xa4\xa1\xa0\xa7" \
-                 b"\xc0\xa8\x00\x68\x00\x50\x00\x00\xee\x94\xcf\x8f\x00\x00\x00\x0b" \
-                 b"\x60\x12\x72\x10\x2e\xe9\x00\x00\x02\x04\x05\x78\x00\x00"
+        packet = b"\x45\x00\x00\x2c\x00\x00\x40\x00\x36\x06\x0b" \
+                 b"\xf3\xa4\xa1\xa0\xa7\xc0\xa8\x00\x68\x00\x50" \
+                 b"\x00\x00\xee\x94\xcf\x8f\x00\x00\x00\x0b\x60" \
+                 b"\x12\x72\x10\x2e\xe9\x00\x00\x02\x04\x05\x78" \
+                 b"\x00\x00"
         address = (('212.193.163.7', 80),)
-        program = Program.Program(0, address, (1, 3, 3), FakeStat(), FakeVisualiser(), FakeSocket([]), FakeTimer(), False)
+        program = Program.Program(
+            0, address, (1, 3, 3), FakeStat(), FakeVisualiser(),
+            FakeSocket([]), FakeTimer(), False)
         program.packets[10] = test_statistic.FPacket(0)
         val1 = copy.deepcopy(program.packets)
         program.parse_packet((packet, ('212.193.163.7', 80)), 0)
         val2 = program.packets
-        self.assertDictEqual(val1, val2, 'Invalid packet don\'t sorted')
+        self.assertDictEqual(val1, val2,
+                             'Invalid packet don\'t sorted')
 
     def test_parse_bad_ack_packet(self):
-        packet = b"\x45\x00\x00\x2c\x00\x00\x40\x00\x36\x06\x0b\xf3\xd4\xc1\xa3\x07" \
-                 b"\xc0\xa8\x00\x68\x00\x50\x00\x00\xee\x94\xcf\x8f\x00\x00\x0a\x0b" \
-                 b"\x60\x12\x72\x10\x2e\xe9\x00\x00\x02\x04\x05\x78\x00\x00"
+        packet = b"\x45\x00\x00\x2c\x00\x00\x40\x00\x36\x06\x0b" \
+                 b"\xf3\xd4\xc1\xa3\x07\xc0\xa8\x00\x68\x00\x50" \
+                 b"\x00\x00\xee\x94\xcf\x8f\x00\x00\x0a\x0b\x60" \
+                 b"\x12\x72\x10\x2e\xe9\x00\x00\x02\x04\x05\x78" \
+                 b"\x00\x00"
         address = (('212.193.163.7', 80),)
-        program = Program.Program(0, address, (1, 3, 3), FakeStat(), FakeVisualiser(), FakeSocket([]), FakeTimer(), False)
+        program = Program.Program(
+            0, address, (1, 3, 3), FakeStat(), FakeVisualiser(),
+            FakeSocket([]), FakeTimer(), False)
         program.packets[10] = test_statistic.FPacket(0)
         val1 = copy.deepcopy(program.packets)
         program.parse_packet((packet, ('212.193.163.7', 80)), 0)
         val2 = program.packets
-        self.assertDictEqual(val1, val2, 'Invalid packet don\'t sorted')
+        self.assertDictEqual(val1, val2,
+                             'Invalid packet don\'t sorted')
 
     def test_parse_timeout_packet(self):
         address = (('212.193.163.7', 80),)
-        program = Program.Program(0, address, (1, 3, 3), FakeStat(), FakeVisualiser(), FakeSocket([]), FakeTimer(), False)
+        program = Program.Program(
+            0, address, (1, 3, 3), FakeStat(), FakeVisualiser(),
+            FakeSocket([]), FakeTimer(), False)
         program.packets[10] = test_statistic.FPacket(0)
-        program.parse_packet((self.VALID_PACKET, ('212.193.163.7', 80)), 10)
+        program.parse_packet((self.VALID_PACKET,
+                              ('212.193.163.7', 80)), 10)
         self.assertTrue(program.packets[10].is_answered)
         self.assertEqual(program.packets[10].time, 10)
         self.assertEqual(program.count_of_received_packets, 0)
@@ -191,10 +237,15 @@ class TestProgram(unittest.TestCase):
         address = (('212.193.163.7', 80),)
         packets = ((1, (self.VALID_PACKET,)),)
         sock = FakeSocket(packets, False)
-        program = Program.Program(0, address, (1, 10, 2), FakeStat(), FakeVisualiser(), sock, FakeTimer(), False)
+        program = Program.Program(
+            0, address, (1, 10, 2), FakeStat(),
+            FakeVisualiser(), sock, FakeTimer(), False)
         program.send_and_receive_packets()
-        self.assertEqual(len(sock.send), 1, 'Wrong count of send packets')
-        self.assertEqual(program.count_of_packets_sent, 1, 'Wrong packet_send value')
-        self.assertEqual(program.count_of_received_packets, 1, 'Wrong packet_received value')
+        self.assertEqual(len(sock.send), 1,
+                         'Wrong count of send packets')
+        self.assertEqual(program.count_of_packets_sent, 1,
+                         'Wrong packet_send value')
+        self.assertEqual(program.count_of_received_packets, 1,
+                         'Wrong packet_received value')
         self.assertTrue(sock.is_created, 'Socket is not created')
         self.assertTrue(sock.is_closed, 'Socket is not closed')

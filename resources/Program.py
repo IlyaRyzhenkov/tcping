@@ -3,7 +3,8 @@ import itertools
 
 
 class Program:
-    def __init__(self, source_port, address, params, stats, visualiser, socket, timer, mode):
+    def __init__(self, source_port, address, params,
+                 stats, visualiser, socket, timer, mode):
         self.sock = socket
         self.source_port = source_port
         self.source_ip = self.sock.get_host()
@@ -30,7 +31,7 @@ class Program:
 
     def send_packet(self):
         for addr in self.address:
-            packet = TCPPacketCreator.HeaderCreator(
+            packet = TCPPacketCreator.TCPPacketCreator(
                 self.source_ip, addr[0],
                 self.source_port, addr[1], self.seq)
             self.packets[self.seq] = packet
@@ -43,22 +44,26 @@ class Program:
             self.stats.update_on_sent(addr, packet)
 
     def parse_packet(self, data, recv_time):
-        parser = TCPPacketParser.Parser(data[0])
+        parser = TCPPacketParser.TCPPacketParser(data[0])
         if parser.proto != 6:
             return
         if parser.filter_by_addr_list(self.address):
             seq = parser.ack - 1
-            if seq in self.packets.keys() and not self.packets[seq].is_answered:
+            if (seq in self.packets.keys() and not
+                    self.packets[seq].is_answered):
                 self.packets[seq].is_answered = True
                 self.packets[seq].answer_type = (
-                    TCPPacketCreator.TcpPacketType.RST if parser.is_rst else TCPPacketCreator.TcpPacketType.ACK)
+                    TCPPacketCreator.TcpPacketType.RST if parser.is_rst else
+                    TCPPacketCreator.TcpPacketType.ACK)
                 self.packets[seq].answer_time = recv_time
                 self.packets[seq].time = recv_time - \
                     self.packets[seq].send_time
                 # расчитывается время ответа
                 if self.packets[seq].time < self.timeout:
                     self.count_of_received_packets += 1
-                    self.stats.update_on_receive((parser.source_ip, parser.source_port), self.packets[seq])
+                    self.stats.update_on_receive(
+                        (parser.source_ip, parser.source_port),
+                        self.packets[seq])
                     self.visualiser.sent_packet_info(self.packets[seq], parser)
 
     def send_and_receive_packets(self):
@@ -67,11 +72,13 @@ class Program:
             border = float('+inf')
         else:
             border = self.count
-        for i in itertools.count() if self.is_unlimited_mode else range(self.count):
+        for i in (itertools.count() if self.is_unlimited_mode else
+                  range(self.count)):
             self.send_packet()
             self.receive_data(self.interval)
             i += 1
-        if self.timeout > self.interval and self.count_of_received_packets < border:
+        if (self.timeout > self.interval and
+                self.count_of_received_packets < border):
             self.receive_data(self.timeout - self.interval)
         self.sock.close()
 
