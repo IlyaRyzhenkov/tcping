@@ -235,7 +235,7 @@ class PacketStatusStat(Stat):
 
     def __str__(self):
         if self.is_calculated:
-            return f'Packet send: {self.send}\n' \
-                   f'Packet received: {self.receive},' \
-                   f'{self.percent_receive}%({self.rst} RST)\n' \
-                   f'Packet loss: {self.loss}, {self.percent_loss}%'
+            return (f'Packet send: {self.send}\n'
+                    f'Packet received: {self.receive}, '
+                    f'{self.percent_receive}% ({self.rst} RST)\n'
+                    f'Packet loss: {self.loss}, {self.percent_loss}%\n')

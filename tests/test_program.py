@@ -1,5 +1,5 @@
 import unittest
-from resources import Program, Visualiser
+from resources import TCPing, Visualiser
 from tests import test_statistic
 import copy
 
@@ -90,7 +90,7 @@ class TestProgram(unittest.TestCase):
 
     def test_send_packets(self):
         sock = FakeSocket([])
-        program = Program.Program(
+        program = TCPing.TCPing(
             0, self.ADDRESS, (1, 1, 1), FakeStat(),
             FakeVisualiser(), sock, FakeTimer(), False)
         program.send_packet()
@@ -113,7 +113,7 @@ class TestProgram(unittest.TestCase):
                    (20, (b'asdasdasdasdasdasdasdadasdasdasadsad', )))
         sock = FakeSocket(packets)
         timer = FakeTimer()
-        program = Program.Program(
+        program = TCPing.TCPing(
             0, self.ADDRESS, (1, 5, 5), FakeStat(),
             FakeVisualiser(), sock, timer, False)
         program.receive_data(5)
@@ -123,7 +123,7 @@ class TestProgram(unittest.TestCase):
         packets = ((20, (b'asdasdasdasdasdasdasdadasdasdasadsad',)),)
         sock = FakeSocket(packets)
         timer = FakeTimer()
-        program = Program.Program(
+        program = TCPing.TCPing(
             0, self.ADDRESS, (1, 5, 5), FakeStat(),
             FakeVisualiser(), sock, timer, False)
         program.receive_data(5)
@@ -136,7 +136,7 @@ class TestProgram(unittest.TestCase):
                    (20, (b'asdsasdasdasdasdasadsasdad',)))
         sock = FakeSocket(packets)
         timer = FakeTimer()
-        program = Program.Program(
+        program = TCPing.TCPing(
             0, self.ADDRESS, (1, 5, 5), FakeStat(),
             FakeVisualiser(), sock, timer, False)
         program.receive_data(5)
@@ -144,7 +144,7 @@ class TestProgram(unittest.TestCase):
 
     def test_parse_valid_packet(self):
         address = (('212.193.163.7', 80),)
-        program = Program.Program(
+        program = TCPing.TCPing(
             0, address, (1, 3, 3), FakeStat(), FakeVisualiser(),
             FakeSocket([]), FakeTimer(), False)
         program.packets[10] = test_statistic.FPacket(0)
@@ -158,7 +158,7 @@ class TestProgram(unittest.TestCase):
 
     def test_parse_two_valid_packets(self):
         address = (('212.193.163.7', 80),)
-        program = Program.Program(
+        program = TCPing.TCPing(
             0, address, (1, 3, 3), FakeStat(), FakeVisualiser(),
             FakeSocket([]), FakeTimer(), False)
         program.packets[10] = test_statistic.FPacket(0)
@@ -175,7 +175,7 @@ class TestProgram(unittest.TestCase):
 
     def test_parse_non_tcp(self):
         address = (('212.193.163.7', 80),)
-        program = Program.Program(
+        program = TCPing.TCPing(
             0, address, (1, 3, 3), FakeStat(), FakeVisualiser(),
             FakeSocket([]), FakeTimer(), False)
         program.packets[10] = test_statistic.FPacket(0)
@@ -194,7 +194,7 @@ class TestProgram(unittest.TestCase):
                  b"\x12\x72\x10\x2e\xe9\x00\x00\x02\x04\x05\x78" \
                  b"\x00\x00"
         address = (('212.193.163.7', 80),)
-        program = Program.Program(
+        program = TCPing.TCPing(
             0, address, (1, 3, 3), FakeStat(), FakeVisualiser(),
             FakeSocket([]), FakeTimer(), False)
         program.packets[10] = test_statistic.FPacket(0)
@@ -211,7 +211,7 @@ class TestProgram(unittest.TestCase):
                  b"\x12\x72\x10\x2e\xe9\x00\x00\x02\x04\x05\x78" \
                  b"\x00\x00"
         address = (('212.193.163.7', 80),)
-        program = Program.Program(
+        program = TCPing.TCPing(
             0, address, (1, 3, 3), FakeStat(), FakeVisualiser(),
             FakeSocket([]), FakeTimer(), False)
         program.packets[10] = test_statistic.FPacket(0)
@@ -223,7 +223,7 @@ class TestProgram(unittest.TestCase):
 
     def test_parse_timeout_packet(self):
         address = (('212.193.163.7', 80),)
-        program = Program.Program(
+        program = TCPing.TCPing(
             0, address, (1, 3, 3), FakeStat(), FakeVisualiser(),
             FakeSocket([]), FakeTimer(), False)
         program.packets[10] = test_statistic.FPacket(0)
@@ -237,7 +237,7 @@ class TestProgram(unittest.TestCase):
         address = (('212.193.163.7', 80),)
         packets = ((1, (self.VALID_PACKET,)),)
         sock = FakeSocket(packets, False)
-        program = Program.Program(
+        program = TCPing.TCPing(
             0, address, (1, 10, 2), FakeStat(),
             FakeVisualiser(), sock, FakeTimer(), False)
         program.send_and_receive_packets()

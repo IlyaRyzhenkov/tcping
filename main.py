@@ -1,6 +1,6 @@
 import socket
 import argparse
-from resources import Program, Statistics, Visualiser, SocketAPI, Timer
+from resources import TCPing, Statistics, Visualiser, SocketAPI, Timer
 import sys
 import signal
 
@@ -90,7 +90,7 @@ def parse_address(address):
 
 if __name__ == "__main__":
     if sys.platform == 'win32':
-        sys.stderr.write('Windows don\'t supported')
+        sys.stderr.write('Windows don\'t supported\n')
         sys.exit(1)
 
     parsed, address = parse_args()
@@ -102,14 +102,14 @@ if __name__ == "__main__":
     stats = Statistics.AddressStatManager(
         (Statistics.PacketStatusStat, Statistics.MinTimeStat,
          Statistics.MaxTimeStat, Statistics.AverageTimeStat))
+
     sock = SocketAPI.SocketAPI()
     timer = Timer.Timer()
-    program = Program.Program(
+    program = TCPing.TCPing(
         source_port,
         address,
         (parsed.packet, parsed.timeout, parsed.interval),
-        stats, visualiser, sock, timer,
-        parsed.unlimited)
+        stats, visualiser, sock, timer, parsed.unlimited)
     if parsed.unlimited:
         signal.signal(signal.SIGUSR1, program.signal_handler)
     program.send_and_receive_packets()

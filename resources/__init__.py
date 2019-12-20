@@ -1,2 +1,2 @@
-__all__ = ['TCPPacketCreator.py', 'TCPPacketParser.py', 'Program', 'SocketAPI',
+__all__ = ['TCPPacketCreator.py', 'TCPPacketParser.py', 'TCPing.py', 'SocketAPI',
            'Statistics', 'Timer', 'Visualiser']
